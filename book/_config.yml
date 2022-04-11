@@ -1,0 +1,9 @@
+title: PyTorch Training Performance Guide
+author: Aleksey Bilogur
+logo: logo.png
+execute:
+  execute_notebooks: force
+repository:
+  url: https://github.com/ResidentMario/pytorch-training-performance-guide
+  path_to_book: book
+  branch: master
