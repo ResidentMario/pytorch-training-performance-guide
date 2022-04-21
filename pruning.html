@@ -1,0 +1,548 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Model Pruning &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Data-Distributed Training" href="data-distributed-training.html" />
+    <link rel="prev" title="JIT" href="jit.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="lr-sched-and-optim.html">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gradient-checkpoints.html">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="jit.html">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="assorted-tricks.html">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/pruning.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-basic-idea">
+   The basic idea
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-lottery-ticket-hypothesis">
+   The lottery ticket hypothesis
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#practical-difficulty">
+   Practical difficulty
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementation">
+   Implementation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#effect-on-model-size">
+   Effect on model size
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Model Pruning</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-basic-idea">
+   The basic idea
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-lottery-ticket-hypothesis">
+   The lottery ticket hypothesis
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#practical-difficulty">
+   Practical difficulty
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementation">
+   Implementation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#effect-on-model-size">
+   Effect on model size
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="model-pruning">
+<h1>Model Pruning<a class="headerlink" href="#model-pruning" title="Permalink to this headline">¶</a></h1>
+<p>This chapter is an introduction to a new idea in deep learning model optimization: model pruning. <strong>Model pruning</strong> is the technique of reducing the size of a deep learning model by finding small weights in the model and setting them to zero. Model can substantially reduce model size, and may one day speed up model inference time as well.</p>
+<p>In this chapter, we will introduce model pruning conceptually: what it is, how it works, and some approaches to using it. We’ll introduce the <strong>lottery ticket hypothesis</strong> and discuss why the influential paper behind it has led to a resurgence of interest in this topic. Finally, we’ll test out model pruning ourselves in PyTorch, benchmarking it on a demo model that we’ve built (<a class="reference external" href="https://github.com/ResidentMario/resnext50-panda">GH repo</a>).</p>
+<p><strong>TLDR</strong>: although model pruning currently provides significant savings in model artifact size, it does not currently have any effect on model training times due to limitations in PyTorch sparse tensor support. However this will almost certainly change in the future—watch this space!</p>
+<div class="section" id="the-basic-idea">
+<h2>The basic idea<a class="headerlink" href="#the-basic-idea" title="Permalink to this headline">¶</a></h2>
+<p>The basic idea behind model pruning is simple. Deep learning models which have been trained to convergence typically have a large number of weights very close to zero contributing very little weight to model inference. For example, the 2018 ICLR paper <a class="reference external" href="https://arxiv.org/abs/1710.03740">Mixed Precision Training</a> includes the following graphic showing weight values in a typical deep neural network (note that “Becomes zero in FP16” is unrelated):</p>
+<p><img alt="Weight gradients" src="_images/weight-gradients1.avif" /></p>
+<p>The smaller the weight, the more likely it is that it can be taken to zero without significantly affecting model performance. This same basic idea informed the development of <a class="reference external" href="https://machinelearningmastery.com/rectified-linear-activation-function-for-deep-learning-neural-networks/">ReLU activation</a>.</p>
+<p>However, there are many decisions that need to be made for this to work in practice:</p>
+<p><strong>Structure</strong>. Unstructured pruning approaches remove weights on a case-by-case basis. Structured pruning approaches remove weights in groups—e.g. removing entire channels at a time. Structured pruning typically has better runtime performance characteristics (it’s a dense computation on fewer channels) but also has a heavier impact on model accuracy (it’s less selective).</p>
+<p><strong>Scoring</strong>. How do you determine that a weight is small? PyTorch provides three different scoring mechanisms. Random pruning is not very performant, but serves as a useful benchmark. L1 pruning scores weights by measuring their contribution to the overall tensor vector using <a class="reference external" href="https://en.wikipedia.org/wiki/Taxicab_geometry">taxicab distance</a>—e.g. in the weights matrix <code class="docutils literal notranslate"><span class="pre">[[0.01,</span> <span class="pre">0.05],</span> <span class="pre">[0.11,</span> <span class="pre">0.12]]</span></code>, the <code class="docutils literal notranslate"><span class="pre">0.01</span></code> value would be pruned first, because it is the component of the vector <code class="docutils literal notranslate"><span class="pre">&lt;0.01,</span> <span class="pre">0.05,</span> <span class="pre">0.11,</span> <span class="pre">0.12&gt;</span></code> with the smallest magnitude. Finally, you can use any other norm, e.g. L2 (<a class="reference external" href="https://en.wikipedia.org/wiki/Euclidean_distance">Euclidean distance</a>), using Ln pruning.</p>
+<p>Aside: if you are unfamiliar with norms and/or distance metrics, or need a refresher, I recommend the Kaggle notebook <a class="reference external" href="https://www.kaggle.com/residentmario/l1-norms-versus-l2-norms">L1 Norms versus L2 Norms</a>.</p>
+<p><strong>Scheduling</strong>. At what step in the training process should model pruning be applied, and how often? Pruning can be mixed into the training process an additional step in between training epochs (iterative pruning), or applied all-at-once after model training is complete (one-shot pruning), or applied in between fine-tuning steps.</p>
+<p>There is no singular “right” approach to model pruning currently; these are all decisions you will have to make on a case-by-case basis.</p>
+</div>
+<div class="section" id="the-lottery-ticket-hypothesis">
+<h2>The lottery ticket hypothesis<a class="headerlink" href="#the-lottery-ticket-hypothesis" title="Permalink to this headline">¶</a></h2>
+<p>A recent resurgence of interest in model pruning techniques in the academic literature due to the popularity of the lottery ticket hypothesis.</p>
+<p>The lottery ticket hypothesis states that, for any given sufficiently dense neural network, there exists a random subnet within that network that is 10-20% as large, but would converge to the same performance in the same amount of training time. This idea was introduced by the 2018 paper <a class="reference external" href="https://arxiv.org/abs/1803.03635">The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks</a>.</p>
+<p>Lottery tickets have been getting a lot of attention because it’s been experimentally shown that it generalizes well to a broad variety of model archetypes. To demonstrate their hypothesis, the authors of the paper use the following model pruning procedure:</p>
+<ol class="simple">
+<li><p>Initialize a model with random weights and train it for some number of iterations.</p></li>
+<li><p>Prune the lowest magnitude parameters (L1 norm). Add these to a sparsity mask.</p></li>
+<li><p>Reset the model back to scratch (e.g. reset all weights back to random)—but this time fix all weights included in the sparsity mask to zero.</p></li>
+<li><p>Train the model for some number of iterations again. Repeat steps (2) and (3) until the desired level of sparsity has been reached.</p></li>
+</ol>
+<p>Subject to carefully chosen hyperparameters (number of training rounds, size of sparsity steps, choice of sparsity structure) and approach, this iterative pruning technique has been shown to produce trained subnets (so-called <strong>winning tickets</strong>) equal to fully parameterized models in performance, but a fraction as large. Much subsequent research has been devoted to choosing hyperparameters and benchmarking different approaches.</p>
+<p>For a more in-depth summary of the technique and adjacent research, I recommend Lukas Galke’s summary blog post <a class="reference external" href="http://www.lpag.de/blog/2019/the-lottery-ticket-hypothesis/">The Lottery Ticket Hypothesis</a>. Of course, for an in-depth understanding of the subject, nothing beats reading <a class="reference external" href="https://arxiv.org/abs/1803.03635">the original paper</a>.</p>
+</div>
+<div class="section" id="practical-difficulty">
+<h2>Practical difficulty<a class="headerlink" href="#practical-difficulty" title="Permalink to this headline">¶</a></h2>
+<p><strong>Unfortunately, model pruning in PyTorch does not currently improve model inference times.</strong></p>
+<p>This unfortunate fact stems from the fact that model pruning does not improve inference performance or reduce model size if it is used with dense tensors. A dense tensor filled with zeroes is not any faster to compute, nor is it any smaller when written to disk. In order for that to happen, it needs to be converted to a sparse tensor.</p>
+<p>This would be fine if PyTorch had robust support for sparse tensors, but unfortunately this is not the case—sparse tensors are <a class="reference external" href="https://discuss.pytorch.org/t/backprop-through-sparse-tensor-is-not-memory-efficient/66409/3">currently extremely limited</a> in what they can do. As a result, in one forum thread from earlier this year a PyTorch core dev <a class="reference external" href="https://discuss.pytorch.org/t/weight-pruning-on-bert/83429/2?u=residentmario">observes</a> that “The point of PyTorch pruning, at the moment, is not necessarily to guarantee inference time speedups or memory savings. It’s more of an experimental feature to enable pruning research.”</p>
+<p>This is not a PyTorch-specific problem, <a class="reference external" href="https://github.com/tensorflow/model-optimization/issues/173">as TensorFlow support is in a similar state</a>. Both frameworks have this feature “on their roadmap”, so I’m hopeful that model pruning inference performance improvements will arrive eventually. In the meantime…</p>
+<p><strong>Model pruning does improve compressed model size on disk</strong>. Compression algorithms, e.g. <code class="docutils literal notranslate"><span class="pre">gzip</span></code> (which will demonstrate in the next section), are very good at encoding the strides of zeroes that model pruning creates. We’ll see this in action in the next two sections of this post.</p>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have a working understanding of how model pruning works, let’s try it out on a real model.</p>
+<p>For my benchmark, I used an image classifier model with a <code class="docutils literal notranslate"><span class="pre">ResNext50</span></code> backbone from the <a class="reference external" href="https://www.kaggle.com/c/prostate-cancer-grade-assessment/data">Prostate Cancer Grade Assessment Challenge</a> on Kaggle, based on the <a class="reference external" href="https://www.kaggle.com/iafoss/panda-concat-tile-pooling-starter-0-79-lb">PANDA concat tile pooling starter [0.79 LB]</a> notebook. This model uses fairly typical layers: <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> and <code class="docutils literal notranslate"><span class="pre">BatchNorm2d</span></code> for the hidden layers in the encoder, <code class="docutils literal notranslate"><span class="pre">ReLU</span></code> for the activation, and a <code class="docutils literal notranslate"><span class="pre">Linear</span></code> output head. You can follow along in code by checking out <a class="reference external" href="https://github.com/ResidentMario/resnext50-panda">the GitHub repo</a>. <a class="reference external" href="https://gist.github.com/ResidentMario/a7bd4dc60262e41e5211b48a92be0477">Here is the model architecture printout</a>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>PandaModel(
+  (enc): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU(inplace=True)
+    (3): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+    (4): Sequential(
+      (0): Bottleneck(
+        (conv1): Conv2d(64, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (downsample): Sequential(
+          (0): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): Bottleneck(
+        (conv1): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      (2): Bottleneck(
+        (conv1): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+    )
+  # ...
+  # Omitted here: this sequential bottleneck module is repeated three more times, with roughly 40
+  # Conv2d layers total.
+  # ...
+  (head): Sequential(
+    (0): AdaptiveConcatPool2d(
+      (ap): AdaptiveAvgPool2d(output_size=1)
+      (mp): AdaptiveMaxPool2d(output_size=1)
+    )
+    (1): Flatten(full=False)
+    (2): Linear(in_features=4096, out_features=512, bias=True)
+    (3): Mish()
+    (4): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (5): Dropout(p=0.5, inplace=False)
+    (6): Linear(in_features=512, out_features=6, bias=True)
+  )
+)
+</pre></div>
+</div>
+<p>The bulk of the weights in the model are located in the <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> layers, so these layers will be the focus of our experiment. To keep things simple, we will use one-shot pruning—e.g. we will not be performing iterative pruning.</p>
+<p>We begin by applying the following unstructured pruning function to our model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in keeping with their experimental status, the PyTorch pruning API is isolated</span>
+<span class="c1"># to the torch.nn.utils namespace</span>
+<span class="kn">from</span> <span class="nn">torch.nn.utils</span> <span class="kn">import</span> <span class="n">prune</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="k">def</span> <span class="nf">prune_model_l1_unstructured</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">,</span> <span class="n">proportion</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">enc</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">):</span>
+            <span class="n">prune</span><span class="o">.</span><span class="n">l1_unstructured</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="n">proportion</span><span class="p">)</span>
+            <span class="n">prune</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">prune_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PyTorch pruning functions are all free functions in the <code class="docutils literal notranslate"><span class="pre">torch.nn.utils.prune</span></code> namespace. In this example, we are iterating through the layers of the model encoder (via <code class="docutils literal notranslate"><span class="pre">modules</span></code>), finding all layers of the <code class="docutils literal notranslate"><span class="pre">nn.Conv2d</span></code> type, and using L1 unstructured pruning to clip 50% (<code class="docutils literal notranslate"><span class="pre">0.5</span></code>) of the weight tensor (<code class="docutils literal notranslate"><span class="pre">nn.Conv2d</span></code> layers have two tensors, a weight and a bias) to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+<p>Recall from earlier that L1 means we are pruning based on the relative magnitude of the weight, and unstructured means that we are pruning weights individually on a per-layer basis. This is the simplest practical form of model pruning possible, which is why we’re starting here.</p>
+<p>Note that, for the purposes of this blog post, we are restricting ourselves to just <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> layers, and just the weight tensor in these layers, because this layer and its weights forms the bulk of the parameter space in the model. In a performance-critical production setting you may also want to experiment with bias term and <code class="docutils literal notranslate"><span class="pre">Linear</span></code> layer pruning.</p>
+<p>The pruning API uses PyTorch’s internal mechanisms to switch the pruned version of the tensor into the place of the unpruned one without deleting it. The original weight tensor is renamed to <code class="docutils literal notranslate"><span class="pre">weight_orig</span></code>. A named buffer is created, called <code class="docutils literal notranslate"><span class="pre">weight_mask</span></code>, storing the nullity mask. This mask is then applied to the weights matrix at runtime (e.g. on the fly) using a forward hook.</p>
+<p>You don’t need to worry about how this works under the hood unless you go about implementing your own model pruning class (in which case, <a class="reference external" href="https://pytorch.org/tutorials/intermediate/pruning_tutorial.html#pruning-a-module">this tutorial</a> and <a class="reference external" href="https://blog.paperspace.com/pytorch-hooks-gradient-clipping-debugging/">this blog post</a> provide some helpful context). The upside is that the original model weights are not removed, and are instead stored alongside the model artifact (e.g. when saved to disk), unless you choose to make that change permanent (and discard the nullity mask) by calling the <code class="docutils literal notranslate"><span class="pre">prune.remove</span></code> function—as we do here.</p>
+<p>To evaluate the performance implications of using this pruning strategy, I pruned progressively larger percentages of the weights in the model, in steps of 5%, and evaluated the impact doing so had on the mean batch loss of the test set. Here were the results:</p>
+<p><img alt="A pruning curve, showing the impact on model accuracy of progressively more aggressive unstructured model pruning." src="_images/pruning-curve.avif" /></p>
+<p>In this plot, 1 is the baseline (unpruned) model performance, and the other numbers are multiple of that baseline. So at <code class="docutils literal notranslate"><span class="pre">0.7</span></code>, 70% sparsity, our loss is 3 times as high as it is for our baseline unpruned model.</p>
+<p>Interpreting this plot, we see that approximately 40 to 50 percent of the <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> parameters in the model are purely noise, contributing no meaningful value to the overall prediction. These values can safely be pruned without affecting model inference. Past that point, our model loss grows exponentially—hence in this case.</p>
+<p>This loss curve is extremely typical of model pruning performance. The placement of the “soft cap” on model sparsity is architecture-dependent, but the curve will always be exponential.</p>
+<p>Next, let’s try structured pruning:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prune_model_l1_structured</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">,</span> <span class="n">proportion</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">enc</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">):</span>
+            <span class="n">prune</span><span class="o">.</span><span class="n">ln_structured</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="n">proportion</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">prune</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+<p>This code sample implements L1 structured pruning on the output channels dimensions: e.g. it removes proportion lowest-scoring channels (filters) from the <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> layer. Plotting the performance implications of L1 structured pruning, we get the following:</p>
+<p><img alt="Another pruning curve, showing the impact on model accuracy of progressively more aggressive structured model pruning." src="_images/structured-pruning-curve.avif" /></p>
+<p>As you can see, structured pruning has much less fidelity than unstructured pruning. With our current implementation, we can only safely prune 5 to 10 percent of the model weights before performance begins to degrade. It appears that most of the filters in our model are doing something useful, and so we cannot remove them nearly as easily as we can individual weights.</p>
+<p>This fits our intuition. While most of the features individual filters in a convolutional neural network look for will have areas which are sparse, and hence unimportant, a network which has been trained to convergence will hardly ever have an entire filter contributing only noise.</p>
+<p>Let’s try one more pruning technique: global unstructured pruning. In global unstructured pruning, instead of specifying individual pruning parameters for individual layers, we apply to the model all at once. This allows us to prune less useful (lower entropy) layers more aggressively than more useful (higher entropy) ones.</p>
+<p>The code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prune_model_global_unstructured</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">,</span> <span class="n">proportion</span><span class="p">):</span>
+    <span class="n">module_tups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">layer_type</span><span class="p">):</span>
+            <span class="n">module_tups</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">))</span>
+
+    <span class="n">prune</span><span class="o">.</span><span class="n">global_unstructured</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="n">module_tups</span><span class="p">,</span> <span class="n">pruning_method</span><span class="o">=</span><span class="n">prune</span><span class="o">.</span><span class="n">L1Unstructured</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">proportion</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">module_tups</span><span class="p">:</span>
+        <span class="n">prune</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+<p>The result:</p>
+<p><img alt="Another pruning curve, yada yada." src="_images/global-unstructured-pruning-curve.avif" /></p>
+<p>Taking a look at model performance we see that, remarkably, one-shot global unstructured pruning allows us to achieve 80 percent sparsity before model performance begins to degrade!</p>
+</div>
+<div class="section" id="effect-on-model-size">
+<h2>Effect on model size<a class="headerlink" href="#effect-on-model-size" title="Permalink to this headline">¶</a></h2>
+<p>Model pruning has a linear relationship with compressed model size. This is because compression algorithms are extremely efficient at serializing patterns containing strides of zeroes.</p>
+<p>In deployment scenarios where on-disk size is important, e.g. model inference on edge devices, this is extremely useful.</p>
+<p>Our model is 97 MB uncompressed, and 90 MB compressed with <code class="docutils literal notranslate"><span class="pre">gzip</span></code> (with default settings):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s2">&quot;/tmp/model.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>!du -h /tmp/model.h5
+!gzip -qf /tmp/model.h5
+!du -h /tmp/model.h5.gz
+
+# out
+97M    /tmp/model.h5
+90M    /tmp/model.h5.gz
+</pre></div>
+</div>
+<p>After pruning the model to 40 percent sparsity, our model dips down to just 65 MB in size—<strong>a size reduction of 35%</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">prune_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s2">&quot;/tmp/model.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>!gzip -qf /tmp/model.h5
+!du -h /tmp/model.h5.gz
+
+# out
+65M    /tmp/model.h5.gz
+</pre></div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="jit.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">JIT</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="data-distributed-training.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Data-Distributed Training</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

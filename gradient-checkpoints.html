@@ -1,0 +1,518 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gradient Checkpoints &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="JIT" href="jit.html" />
+    <link rel="prev" title="LR Schedulers, Adaptive Optimizers" href="lr-sched-and-optim.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="lr-sched-and-optim.html">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="jit.html">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pruning.html">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="assorted-tricks.html">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/gradient-checkpoints.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-neural-networks-use-memory">
+   How neural networks use memory
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-gradient-checkpointing-helps">
+   How gradient checkpointing helps
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-out-the-api">
+   Testing out the API
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#benchmarks">
+   Benchmarks
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Gradient Checkpoints</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-neural-networks-use-memory">
+   How neural networks use memory
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-gradient-checkpointing-helps">
+   How gradient checkpointing helps
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-out-the-api">
+   Testing out the API
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#benchmarks">
+   Benchmarks
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="gradient-checkpoints">
+<h1>Gradient Checkpoints<a class="headerlink" href="#gradient-checkpoints" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter we will cover <strong>gradient checkpointing</strong>. In a nutshell, gradient checkpointing works by recomputing the intermediate values of a deep neural net (which would ordinarily be stored at forward time) at backward time. This enables training larger models and/or larger batch sizes by trading compute (the time cost of recalculating these values twice) for memory (the bandwidth cost of storing these values ahead of time).</p>
+<p>At the end of this article, we’ll see an example benchmark showing how gradient checkpointing reduces the model’s memory cost by 60% (at the cost of 25% greater training time).</p>
+<p><a class="reference external" href="https://github.com/spellml/tweet-sentiment-extraction/blob/master/notebooks/5-checkpointing.ipynb">To follow along in code, check out the GitHub repository.</a></p>
+<p><strong>TLDR</strong>: gradient checkpointing allows you to scale single-machine model training to larger models and/or batch sizes without resorting to more invasive techniques like distributed training. It’s a good candidate for squeezing the last bit of computational juice out of your existing setup.</p>
+<div class="section" id="how-neural-networks-use-memory">
+<h2>How neural networks use memory<a class="headerlink" href="#how-neural-networks-use-memory" title="Permalink to this headline">¶</a></h2>
+<p>In order to understand how gradient checkpointing helps, we first need to understand a bit about how model memory allocation works.</p>
+<p>The total memory used by a neural network is basically the sum of two components.</p>
+<p>The first component is the static memory used by the model. Though there is some fixed cost built into a PyTorch model, the cost is totally almost totally dominated by the model weights. The modern deep learning models used in production today have anywhere between 1 million and 1 billion total parameters. For reference, 100-150 million parameters is about the practical limit for an <a class="reference external" href="https://www.nvidia.com/en-us/data-center/tesla-t4/">NVIDIA T4</a> with 16 GB of GPU memory.</p>
+<p>The second component is the dynamic memory taken up by the model. Every forward pass through a neural network in train mode computes an activation for every neuron in the network; this value is then stored in the so-called <strong>computation graph</strong>. One value must be stored for every single training sample in the batch, so this adds up quickly. The total cost is determined by model size and batch size, and sets the limit on the maximum batch size that will fit into your GPU memory.</p>
+<p>To learn more about PyTorch <code class="docutils literal notranslate"><span class="pre">autograd</span></code>, check out <a class="reference external" href="https://www.kaggle.com/residentmario/pytorch-autograd-explained">PyTorch autograd explained</a>.</p>
+</div>
+<div class="section" id="how-gradient-checkpointing-helps">
+<h2>How gradient checkpointing helps<a class="headerlink" href="#how-gradient-checkpointing-helps" title="Permalink to this headline">¶</a></h2>
+<p>Large models are expensive in both the static and dynamic dimensions. They are hard to fit onto the GPU in the first place and hard to train once you get them onto the device because they force a batch size that’s too small to converge.</p>
+<p>Various techniques exist to ameliorate one or both of these problems. Gradient checkpointing is one such technique; distributed training, <em>which we’d previously covered here</em> (TODO: link to chapter), is another.</p>
+<p>Gradient checkpointing works by omitting some of the activation values from the computational graph. This reduces the memory used by the computational graph, reducing memory pressure overall (and allowing larger batch sizes in the process).</p>
+<p>However, the reason that the activations are stored in the first place is that they are needed when calculating the gradient during backpropagation. Omitting them from the computational graph forces PyTorch to recalculate these values wherever they appear, slowing down computation overall.</p>
+<p>Thus, gradient checkpointing is an example of one of the classic tradeoffs in computer science—between memory and compute.</p>
+<p>PyTorch provides gradient checkpointing via <code class="docutils literal notranslate"><span class="pre">torch.utils.checkpoint.checkpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.utils.checkpoint.checkpoint_sequential</span></code>, which implements this feature as follows (per <a class="reference external" href="https://pytorch.org/docs/stable/checkpoint.html">the notes in the docs</a>). During the forward pass, PyTorch saves the input tuple to each function in the model. During backpropagation, the combination of input tuple and function is recalculated for each function in a just-in-time manner, plugged into the gradient formula for each function that needs it, and then discarded. The net computation cost is roughly that of forward propagating each sample through the model twice.</p>
+<p>Gradient checkpointing was first published in the 2016 paper <a class="reference external" href="https://arxiv.org/pdf/1604.06174.pdf">Training Deep Nets With Sublinear Memory Cost</a>. The paper makes the claim that the gradient checkpointing algorithm reduces the dynamic memory cost of the model from <code class="docutils literal notranslate"><span class="pre">O(n)</span></code> (where <code class="docutils literal notranslate"><span class="pre">n</span></code> is the number of layers in the model) to <code class="docutils literal notranslate"><span class="pre">O(sqrt(n)</span></code>), and demonstrates this experimentally by compressing an ImageNet variant from <code class="docutils literal notranslate"><span class="pre">48</span> <span class="pre">GB</span></code> to <code class="docutils literal notranslate"><span class="pre">7</span> <span class="pre">GB</span></code> in memory.</p>
+</div>
+<div class="section" id="testing-out-the-api">
+<h2>Testing out the API<a class="headerlink" href="#testing-out-the-api" title="Permalink to this headline">¶</a></h2>
+<p>There are two different gradient checkpointing methods in the PyTorch API, both in the <code class="docutils literal notranslate"><span class="pre">torch.utils.checkpoint</span></code> namespace. The simpler of the two, <code class="docutils literal notranslate"><span class="pre">checkpoint_sequential</span></code>, is constrained to <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html">sequential models</a> (e.g. models using the <code class="docutils literal notranslate"><span class="pre">torch.nn.Sequential</span></code> wrapper); <code class="docutils literal notranslate"><span class="pre">checkpoint</span></code>, is its more flexible counterpart, can be used for any module.</p>
+<p>Here is a complete code sample (taken from <a class="reference external" href="https://github.com/prigoyal/pytorch_memonger/blob/master/tutorial/Checkpointing_for_PyTorch_models.ipynb">an old tutorial</a>) showing <code class="docutils literal notranslate"><span class="pre">checkpoint_sequential</span></code> in action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="kn">from</span> <span class="nn">torch.utils.checkpoint</span> <span class="kn">import</span> <span class="n">checkpoint_sequential</span>
+
+<span class="c1"># a trivial model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="c1"># model input</span>
+<span class="n">input_var</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># the number of segments to divide the model into</span>
+<span class="n">segments</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># finally, apply checkpointing to the model</span>
+<span class="c1"># note the code that this replaces:</span>
+<span class="c1"># out = model(input_var)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">checkpoint_sequential</span><span class="p">(</span><span class="n">modules</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">input_var</span><span class="p">)</span>
+
+<span class="c1"># backpropagate</span>
+<span class="n">out</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backwards</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>As you can see, <code class="docutils literal notranslate"><span class="pre">checkpoint_sequential</span></code> is a replacement for the <code class="docutils literal notranslate"><span class="pre">forward</span></code> or <code class="docutils literal notranslate"><span class="pre">__call__</span></code> method on the <code class="docutils literal notranslate"><span class="pre">module</span></code> object. <code class="docutils literal notranslate"><span class="pre">out</span></code> is almost the same tensor we’d get if we’d called <code class="docutils literal notranslate"><span class="pre">model(input_var)</span></code>; the key differences are that it’s missing accumulated values, and has some extra metadata attached to it instructing PyTorch to recompute these values when it needs them during <code class="docutils literal notranslate"><span class="pre">out.backward()</span></code>.</p>
+<p>Notably, <code class="docutils literal notranslate"><span class="pre">checkpoint_sequential</span></code> takes a segment’s integer value as input. <code class="docutils literal notranslate"><span class="pre">checkpoint_sequential</span></code> works by splitting the model into n lengthwise segments, and applying checkpointing to each segment except the last.</p>
+<p>This is simple and easy to work with, but has some major limitations. You have no control over where the boundaries of the segments are, and there is no way to checkpoint the entire module (instead of some part of it).</p>
+<p>The alternative is using the more flexible checkpoint API. To demonstrate, consider the following simple convolutional model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CIFAR10Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linearize</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_1</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_1</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_2</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_2</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linearize</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_3</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+</pre></div>
+</div>
+<p>This model has two convolutional blocks, some dropout, and a linear head (the 10 outputs correspond with the 10 classes in <a class="reference external" href="https://en.wikipedia.org/wiki/CIFAR-10">CIFAR10</a>).</p>
+<p>Here is an updated version of this model using gradient checkpointing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CIFAR10Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linearize</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_1</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_1</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cnn_block_2</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_2</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linearize</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_3</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">checkpoint</span></code>, appearing here in forward, takes a module (or any callable, such as a function) and its arguments as input. The arguments will be memoized at forward time, then used to recompute its output value at backward time.</p>
+<p>There are some additional changes we had to make to the model definition to make this work.</p>
+<p>First of all, you’ll notice that we removed the <code class="docutils literal notranslate"><span class="pre">nn.Dropout</span></code> layers from the convolutional blocks; this is because checkpointing is incompatible with dropout (recall that effectively runs the sample through the model twice—dropout would arbitrarily drop different values in each pass, producing different outputs). Basically, any layer that exhibits non-idempotent behavior when rerun shouldn’t be checkpointed (<code class="docutils literal notranslate"><span class="pre">nn.BatchNorm</span></code> is another example). The solution is to refactor the module so the problem layer is not excluded from the checkpoint segment, which is exactly what we did here.</p>
+<p>Second, you’ll notice that we used checkpoint on the second convolutional block in the model, but not the first. This is because checkpoint naively determines whether its input function requires gradient descent (e.g. whether it is in <code class="docutils literal notranslate"><span class="pre">no_grad=True</span></code> or <code class="docutils literal notranslate"><span class="pre">no_grad=False</span></code> mode) by examining the <code class="docutils literal notranslate"><span class="pre">no_grad</span></code> behavior of the input tensor. The input tensor to the model is almost always in <code class="docutils literal notranslate"><span class="pre">no_grad=False</span></code> mode, because we’re almost always interested in calculating the gradient relative to the network weights, not the values of the input sample itself. As a result, checkpointing the first submodule in the model would achieve less than nothing: it would effectively freeze the existing weights in place, preventing them from training at all. Refer to <a class="reference external" href="https://discuss.pytorch.org/t/use-of-torch-utils-checkpoint-checkpoint-causes-simple-model-to-diverge/116271">this PyTorch forum thread</a> for some more details.</p>
+<p>There are some other probably minor details having to do with RNG state and incompatibility with detached tensors discussed in <a class="reference external" href="https://pytorch.org/docs/stable/checkpoint.html">the docs</a>.</p>
+<p>You can see the full training loops for this code sample <a class="reference external" href="https://gist.github.com/ResidentMario/e3254172b4706191089bb63ecd610e21">here</a> and <a class="reference external" href="https://gist.github.com/ResidentMario/9c3a90504d1a027aab926fd65ae08139">here</a>.</p>
+</div>
+<div class="section" id="benchmarks">
+<h2>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h2>
+<p>As a quick benchmark, I enabled model checkpointing on tweet-sentiment-extraction, a sentiment classifier model with a BERT backbone based on Twitter data. <a class="reference external" href="https://github.com/spellml/tweet-sentiment-extraction">You can see that code here</a>. <code class="docutils literal notranslate"><span class="pre">transformers</span></code> helpfully already implements model checkpointing as an optional part of its API; enabling it for our model is as simple as flipping a single boolean flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># code from model_5.py</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">PretrainedConfig</span><span class="o">.</span><span class="n">get_config_dict</span><span class="p">(</span><span class="s2">&quot;bert-base-uncased&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;output_hidden_states&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;gradient_checkpointing&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># NEW!</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">BertConfig</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">bert</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">BertModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="s2">&quot;bert-base-uncased&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">cfg</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>I used <a class="reference external" href="https://spell.ml/">Spell</a> to train this model four times: once each on an NVIDIA T4 and NVIDIA V100 GPU, and once each in checkpointed and uncheckpointed modes. All runs had a batch size of 64. Here are the results:</p>
+<p><img alt="Checkpoint runtime results" src="_images/checkpoint-runtime-results.avif" /></p>
+<p>The first row has training runs conducted with model checkpointing off, the second with it on.</p>
+<p><strong>Model checkpointing reduced peak model memory usage by about 60%, while increasing model training time by about 25%.</strong></p>
+<p>Of course, the primary reason you would want to use checkpoints is so that you can get batch sizes onto GPU that are too large to fit straight up. In the blog post <a class="reference external" href="https://qywu.github.io/2019/05/22/explore-gradient-checkpointing.html">Explore Gradient-Checkpointing in PyTorch</a>, Qingyang Wu demonstrates this by going from 24 to an amazing 132 samples per batch!</p>
+<p><img alt="Checkpoint size results" src="_images/checkpoint-size-results.avif" /></p>
+<!--
+## To-do
+
+- Query practitioners for more detailed information on the trade-off b/c the conclusion (and recommendation) is currently very weak.
+- Repro performance benchmarks.
+- Build our own size benchmarks.
+-->
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="lr-sched-and-optim.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">LR Schedulers, Adaptive Optimizers</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="jit.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">JIT</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

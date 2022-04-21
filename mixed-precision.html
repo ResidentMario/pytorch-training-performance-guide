@@ -1,0 +1,501 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mixed Precision &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Assorted Tricks" href="assorted-tricks.html" />
+    <link rel="prev" title="Model-Distributed Training" href="model-distributed-training.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="lr-sched-and-optim.html">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gradient-checkpoints.html">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="jit.html">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pruning.html">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="assorted-tricks.html">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/mixed-precision.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-mixed-precision-works">
+   How mixed precision works
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-tensor-cores-work">
+   How tensor cores work
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-pytorch-automatic-mixed-precision-works">
+   How PyTorch automatic mixed precision works
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#performance-benchmarks">
+   Performance benchmarks
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#what-about-memory">
+   What about memory?
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Mixed Precision</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-mixed-precision-works">
+   How mixed precision works
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-tensor-cores-work">
+   How tensor cores work
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-pytorch-automatic-mixed-precision-works">
+   How PyTorch automatic mixed precision works
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#performance-benchmarks">
+   Performance benchmarks
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#what-about-memory">
+   What about memory?
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="mixed-precision">
+<h1>Mixed Precision<a class="headerlink" href="#mixed-precision" title="Permalink to this headline">¶</a></h1>
+<p>TLDR: the <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp</span></code> mixed-precision training module forthcoming in PyTorch 1.6 delivers on its promise, delivering speed-ups of 50-60% in large model training jobs with just a handful of new lines of code.</p>
+<p>One of the most exciting additions expected to land in PyTorch 1.6, coming soon, is support for automatic mixed-precision training.</p>
+<p><strong>Mixed-precision training</strong> is a technique for substantially reducing neural net training time by performing as many operations as possible in half-precision floating point, <code class="docutils literal notranslate"><span class="pre">fp16</span></code>, instead of the (PyTorch default) single-precision floating point, <code class="docutils literal notranslate"><span class="pre">fp32</span></code>. Recent generations of NVIDIA GPUs come loaded with special-purpose tensor cores specially designed for fast <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix operations.</p>
+<p>However, up until now these tensor cores have remained difficult to use, as it has required writing reduced precision operations into your model by hand. This is where the automatic in automatic mixed-precision training comes in. The <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp</span></code> API allows you to implement mixed precision training into your training scripts in just five lines of code!</p>
+<p>This post is a developer-friendly introduction to mixed precision training. We will:</p>
+<ul class="simple">
+<li><p>Take a deep dive into mixed-precision training as a technique.</p></li>
+<li><p>Introduce tensor cores: what they are and how they work.</p></li>
+<li><p>Introduce the new PyTorch <code class="docutils literal notranslate"><span class="pre">amp</span></code> API.</p></li>
+<li><p>Benchmark three different networks trained using <code class="docutils literal notranslate"><span class="pre">amp</span></code>.</p></li>
+<li><p>Discuss which network archetypes will benefit the most from <code class="docutils literal notranslate"><span class="pre">amp</span></code>.</p></li>
+</ul>
+<div class="section" id="how-mixed-precision-works">
+<h2>How mixed precision works<a class="headerlink" href="#how-mixed-precision-works" title="Permalink to this headline">¶</a></h2>
+<p>Before we can understand how mixed precision training works, we first need to review a little bit about floating point numbers.</p>
+<p>In computer engineering, decimal numbers like <code class="docutils literal notranslate"><span class="pre">1.0151</span></code> or <code class="docutils literal notranslate"><span class="pre">566132.8</span></code> are traditionally represented as floating point numbers. Since we can have infinitely precise numbers (think <code class="docutils literal notranslate"><span class="pre">π</span></code>), but limited space in which to store them, we have to make a compromise between precision (the number of decimals we can include in a number before we have to start rounding it) and size (how many bits we use to store the number).</p>
+<p>The technical standard for floating point numbers, IEEE 754 (for a deep dive I recommend the PyCon 2019 talk <a class="reference external" href="https://www.youtube.com/watch?v=zguLmgYWhM0">Floats are Friends: making the most of IEEE754.00000000000000002</a>), sets the following standards:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fp64</span></code>, aka double-precision or “double”, max rounding error of <code class="docutils literal notranslate"><span class="pre">~2^-52</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fp32</span></code>, aka single-precision or “single”, max rounding error of <code class="docutils literal notranslate"><span class="pre">~2^-23</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fp16</span></code>, aka half-precision or “half”, max rounding error of <code class="docutils literal notranslate"><span class="pre">~2^-10</span></code></p></li>
+</ul>
+<p>Python uses <code class="docutils literal notranslate"><span class="pre">fp64</span></code> for the float type. PyTorch, which is much more memory-sensitive, uses <code class="docutils literal notranslate"><span class="pre">fp32</span></code> as its default <code class="docutils literal notranslate"><span class="pre">dtype</span></code> instead.</p>
+<p>The basic idea behind mixed precision training is simple: <strong>halve the precision <code class="docutils literal notranslate"><span class="pre">(fp32</span> <span class="pre">→</span> <span class="pre">fp16)</span></code>, halve the training time</strong>.</p>
+<p>The hard part is doing so safely.</p>
+<p>Notice that the smaller the floating point, the larger the rounding errors it incurs. Any operation performed on a “small enough” floating point number will round the value to zero! This is known as underflowing, and it’s a problem because many to most gradient update values created during backpropogation are extremely small but nevertheless non-zero. Rounding error accumulation during backpropogation can turn these numbers into zeroes or nans; this creates inaccurate gradient updates and prevents your network from converging.</p>
+<p>The 2018 ICLR paper <a class="reference external" href="https://arxiv.org/pdf/1710.03740.pdf">Mixed Precision Training</a> found that naively using <code class="docutils literal notranslate"><span class="pre">fp16</span></code> everywhere “swallows” gradient updates smaller than <code class="docutils literal notranslate"><span class="pre">2^-24</span></code> in value — around 5% of all gradient updates made by their example network:</p>
+<p><img alt="Weight gradients" src="_images/weight-gradients.avif" /></p>
+<p><strong>Mixed precision training</strong> is a set of techniques which allows you to use <code class="docutils literal notranslate"><span class="pre">fp16</span></code> without causing your model training to diverge. It’s a combination of three different techniques.</p>
+<p>One, maintain two copies of the weights matrix, a “master copy” in <code class="docutils literal notranslate"><span class="pre">fp32</span></code>, and a half-precision copy of it in <code class="docutils literal notranslate"><span class="pre">fp16</span></code>. Gradient updates are calculated using the <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix but applied to the <code class="docutils literal notranslate"><span class="pre">fp32</span></code> matrix. This makes applying the gradient update much safer.</p>
+<p>Two, different vector operations accumulate errors at different rates, so treat them differently. Some operations are always safe in <code class="docutils literal notranslate"><span class="pre">fp16</span></code>, but others are only reliable in <code class="docutils literal notranslate"><span class="pre">fp32</span></code>. Instead of running the entire neural network in <code class="docutils literal notranslate"><span class="pre">fp16</span></code>, run some parts in halves and others in singles. This mixture of <code class="docutils literal notranslate"><span class="pre">dtypes</span></code> is why this technique is called “mixed precision”.</p>
+<p>Three, use loss scaling. Loss scaling means multiplying the output of the loss function by some scalar number (the paper suggests starting with <code class="docutils literal notranslate"><span class="pre">8</span></code>) before performing back-propagation. Multiplicative increases in the loss values create multiplicative increases in gradient update values, “lifting” many gradient update values above the <code class="docutils literal notranslate"><span class="pre">2^-24</span></code> threshold for <code class="docutils literal notranslate"><span class="pre">fp16</span></code> safety. Just make sure to undo the loss scaling before applying the gradient update, and don’t pick a loss scaling so large that it produces inf weight updates (overflowing), causing the network to diverge in the other direction.</p>
+<p>Combining these three techniques in tandem allowed the authors to train a variety of networks to convergence in significantly expedited time. For benchmarks, <a class="reference external" href="https://arxiv.org/pdf/1710.03740.pdf">I recommend reading the paper</a> — it’s only 9 pages long!</p>
+</div>
+<div class="section" id="how-tensor-cores-work">
+<h2>How tensor cores work<a class="headerlink" href="#how-tensor-cores-work" title="Permalink to this headline">¶</a></h2>
+<p>While mixed precision training saves memory everywhere (an <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix is half the size of a <code class="docutils literal notranslate"><span class="pre">fp32</span></code> one), it doesn’t provide a model training speedup without special GPU support. There needs to be something on the chip that accelerates half-precision operations. In recent generations of NVIDIA GPUs, there is: tensor cores.</p>
+<p><strong>Tensor cores</strong> are a new type of processing unit that’s optimized for a single very specific operation: multiplying two <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">x</span> <span class="pre">4</span></code> <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrices together and adding the result to a third <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">x</span> <span class="pre">4</span></code> <code class="docutils literal notranslate"><span class="pre">fp16</span></code> or <code class="docutils literal notranslate"><span class="pre">fp32</span></code> matrix (a “fused multiply add”).</p>
+<p><img alt="Weight gradients" src="_images/fused-multiply-add.avif" /></p>
+<p>Larger <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix multiplication operations can be implemented using this operation as their basic building block. And since most of backpropagation boils down to matrix multiplication, tensor cores are applicable to almost any computationally intensive layer in the network.</p>
+<p>The catch: the input matrices must be in <code class="docutils literal notranslate"><span class="pre">fp16</span></code>. <strong>If you’re training on a GPU with tensor cores and not using mixed precision training, you’re not getting 100% out of your card!</strong> A standard PyTorch model defined in <code class="docutils literal notranslate"><span class="pre">fp32</span></code> will never land any <code class="docutils literal notranslate"><span class="pre">fp16</span></code> math onto the chip, so all of those sweet, sweet tensor cores will remain idle.</p>
+<p>Tensor cores were introduced in late 2017 in the last-gen Volta architecture, saw improvement in current-gen Turing, and will see further refinements in the still-forthcoming Ampere. The two GPUs generally available on the cloud that support are the <a class="reference external" href="https://www.nvidia.com/en-us/data-center/v100/">V100</a> (5120 CUDA cores, 600 tensor cores) and the <a class="reference external" href="https://www.nvidia.com/en-us/data-center/tesla-t4/">T4</a> (2560 CUDA cores, 320 tensor cores).</p>
+<p>One other piece of the puzzle worth keeping in mind is firmware. Although all versions of CUDA 7.0 or higher supports tensor core operations, early implementations <a class="reference external" href="https://www.reddit.com/r/MachineLearning/comments/bp0wox/d_training_nns_with_fp16_in_tensorflow/eno6n1d/">are reputedly very buggy</a>, so it’s important to be on CUDA 10.0 or higher.</p>
+</div>
+<div class="section" id="how-pytorch-automatic-mixed-precision-works">
+<h2>How PyTorch automatic mixed precision works<a class="headerlink" href="#how-pytorch-automatic-mixed-precision-works" title="Permalink to this headline">¶</a></h2>
+<p>With that important background out of the way, we’re finally ready to dig into the new PyTorch <code class="docutils literal notranslate"><span class="pre">amp</span></code> API.</p>
+<p>Mixed precision training has technically been possible forever: run sections of your network in <code class="docutils literal notranslate"><span class="pre">fp16</span></code> manually and implement loss scaling yourself. The exciting thing in automatic mixed-precision training is the “automatic” part. There’s just a couple of new API primitives to learn: <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp.GradScalar</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp.autocast</span></code>. Enabling mixed precision training is as simple as slotting these into the right places in your training script!</p>
+<p>To demonstrate, here’s an excerpt of the training loop for a network using mixed-precision training. <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">NEW</span></code> marks spots where new code got added.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_lr</span><span class="p">)</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">OneCycleLR</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_lr</span><span class="p">,</span>
+    <span class="n">cycle_momentum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="p">,</span>
+    <span class="n">steps_per_epoch</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="n">batches</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># NEW</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">GradScaler</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">X_batch</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batches</span><span class="p">):</span>
+        <span class="n">X_batch</span> <span class="o">=</span> <span class="n">X_batch</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">y_batch</span> <span class="o">=</span> <span class="n">y_batch</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+        <span class="c1"># NEW</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_batch</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span>
+
+        <span class="c1"># NEW</span>
+        <span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">lv</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">; Batch </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">; Loss </span><span class="si">{</span><span class="n">lv</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># NEW</span>
+        <span class="n">scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The new PyTorch <code class="docutils literal notranslate"><span class="pre">GradScaler</span></code> object is PyTorch’s implementation of loss scaling. Recall from the section “How mixed precision works” that some form of loss scaling is necessary to keep gradients from rounding down to 0 during training. The optimal loss multiplier is one sufficiently high to retain very small gradients, but not so high that it causes very large gradients to round up to inf, creating the opposite problem.</p>
+<p>However, there is no one loss multiplier that will work for every network. The optimal multiplier is also very likely to change over time, as gradients are typically much larger at the start of training than at the end. How do you find the optimal loss multiplier without giving the user another hyperparameter that they have to tune?</p>
+<p>PyTorch uses <strong>exponential backoff</strong> to solve this problem. <code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> starts with a small loss multiplier, which every so often it doubles. This gradual doubling behavior continues until <code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> encounters a gradient update containing <code class="docutils literal notranslate"><span class="pre">inf</span></code> values. <code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> discards this batch (e.g. the gradient update is skipped), halves the loss multiplier, and resets its doubling cooldown.</p>
+<p>Stepping the loss multiplier up and down in this way allows PyTorch to approximate the appropriate loss multiplier over time. Readers familiar with TCP congestion control should find the core ideas here very familiar! The exact numbers used by the algorithm are configurable, and you can read the defaults right out of the docstring:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">GradScaler</span><span class="p">(</span>
+    <span class="n">init_scale</span><span class="o">=</span><span class="mf">65536.0</span><span class="p">,</span> <span class="n">growth_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">backoff_factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">growth_interval</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> needs to exert control over the gradient update calculations (to check for overflow) and over the optimizer (to turn discarded batches into a no-op) to implement its behavior. This is why <code class="docutils literal notranslate"><span class="pre">loss.backwards()</span></code> is replaced with <code class="docutils literal notranslate"><span class="pre">scaler.scale(loss).backwards()</span></code> and <code class="docutils literal notranslate"><span class="pre">optimizer.step()</span></code> is replaced with <code class="docutils literal notranslate"><span class="pre">scaler.step(optimizer)</span></code>.</p>
+<p>It’s notable that <code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> will detect and stop overflows (because <code class="docutils literal notranslate"><span class="pre">inf</span></code> is always bad), but it has no way to detect and stop underflows (because <code class="docutils literal notranslate"><span class="pre">0</span></code> is often a legitimate value). If you pick an <code class="docutils literal notranslate"><span class="pre">init_scale</span></code> that’s too low and a <code class="docutils literal notranslate"><span class="pre">growth_interval</span></code> that’s too high, your network may underflow and diverge before <code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> can intervene. For this reason it’s probably a good idea to pick a very large starting value, and with default <code class="docutils literal notranslate"><span class="pre">init_scale=65536</span></code> (<code class="docutils literal notranslate"><span class="pre">2¹⁶</span></code>) that does seem to be the approach that PyTorch is following.</p>
+<p>Finally, note that <code class="docutils literal notranslate"><span class="pre">GradScalar</span></code> is a stateful object. Checkpointing a model using this feature will require writing it to and reading it from disk in alongside your model weights. This is easy to do using the <code class="docutils literal notranslate"><span class="pre">state_dict</span></code> and <code class="docutils literal notranslate"><span class="pre">load_state_dict</span></code> object methods (covered <a class="reference external" href="https://pytorch.org/docs/master/amp.html#torch.cuda.amp.GradScaler.state_dict">here</a> in the PyTorch docs).</p>
+<p>The other half of the automatic mixed-precision training puzzle is the <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp.autocast</span></code> context manager. Autocast implements <code class="docutils literal notranslate"><span class="pre">fp32</span> <span class="pre">-&gt;</span> <span class="pre">fp16</span></code> behavior. Recall from “How mixed precision works” that, because different operations accumulate errors at different rates, not all operations are safe to run in fp16. The following screenshots taken from <a class="reference external" href="https://pytorch.org/docs/master/amp.html#autocast-op-reference">the amp module documentation</a> covers how autocast treats the various operations available in PyTorch:</p>
+<p><img alt="Autocast float16 ops" src="_images/autocast-float16-ops.avif" /></p>
+<p>This list predominantly consists of two things, matrix multiplication and convolutions. The simple <code class="docutils literal notranslate"><span class="pre">linear</span></code> function is also present.</p>
+<p><img alt="Autocast promo ops" src="_images/autocast-promo-ops.avif" /></p>
+<p>These operations are safe in <code class="docutils literal notranslate"><span class="pre">fp16</span></code>, but have up-casting rules to ensure that they don’t break when given a mixture of <code class="docutils literal notranslate"><span class="pre">fp16</span></code> and <code class="docutils literal notranslate"><span class="pre">fp32</span></code> input. Note that this list includes two other fundamental linear algebraic operations: matrix/vector dot products and vector cross products.</p>
+<p><img alt="Autocast float32 ops" src="_images/autocast-float32-ops.avif" /></p>
+<p>Logarithms, exponents, trigonometric functions, normal functions, discrete functions, and (large) sums are unsafe in <code class="docutils literal notranslate"><span class="pre">fp16</span></code> and must be performed in <code class="docutils literal notranslate"><span class="pre">fp32</span></code>.</p>
+<p>Looking through the list, it seems to me that most layers would benefit from autocasting, thanks to their internal reliance on fundamental linear algebra operations, but most activation functions would not. Convolutional layers stand out as potentially the biggest winner.</p>
+<p>Enabling autocasting is dead simple. All you need to do is wrap the forward pass of your model using the <code class="docutils literal notranslate"><span class="pre">autocast</span></code> context manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_batch</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Wrapping the forward pass in this way automatically enables autocasting on the backwards pass (e.g. <code class="docutils literal notranslate"><span class="pre">loss.backwards()</span></code>) as well, so you don’t need to call <code class="docutils literal notranslate"><span class="pre">autocast</span></code> twice.</p>
+<p>So long as you follow best practices for using PyTorch (avoiding in-place operations, for example), autocasting basically “just works”. It even works out-of-the-box with the multi-GPU <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> API (so long as you follow the recommended strategy of using one process per GPU). It works with the <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> multi-GPU API too, <a class="reference external" href="https://pytorch.org/docs/master/notes/amp_examples.html#dataparallel-in-a-single-process">with one small adjustment</a>. The “Working with multiple GPUs” section of the <a class="reference external" href="https://pytorch.org/docs/master/notes/amp_examples.html#working-with-multiple-gpus">Automatic Mixed Precision Examples page</a> in the PyTorch docs is a handy reference on this subject. The one major “gotcha” (IMO) to keep in mind: “<a class="reference external" href="https://pytorch.org/docs/master/amp.html#prefer-binary-cross-entropy-with-logits-over-binary-cross-entropy">prefer binary cross entropy with logits over binary cross entropy</a>”.</p>
+</div>
+<div class="section" id="performance-benchmarks">
+<h2>Performance benchmarks<a class="headerlink" href="#performance-benchmarks" title="Permalink to this headline">¶</a></h2>
+<p>At this point we’ve learned what mixed precision is, what tensor cores are, and how the PyTorch API implementing automatic mixed precision behaves. The only thing left is looking at some real-world performance benchmarks!</p>
+<p>I trained three very different neural networks once with automatic mixed precision and once without, using V100s (last-gen tensor cores) and T4s (current-gen tensor cores) via the Spell API. I used AWS EC2 instances, <code class="docutils literal notranslate"><span class="pre">p3.2xlarge</span></code> and <code class="docutils literal notranslate"><span class="pre">g4dn.xlarge</span></code> respectively, a recent PyTorch 1.6 nightly, and CUDA 10.0. All of the models converged equally, e.g. none of the models saw any difference in training loss between the mixed precision and vanilla network. The networks trained were:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Feedforward</span></code>, a feedforward neural network trained on data from the <a class="reference external" href="https://www.kaggle.com/c/rossmann-store-sales">Rossman Store Samples</a> competition on Kaggle. <a class="reference external" href="https://github.com/ResidentMario/spell-feedforward-rossman">Get the code here</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">UNet</span></code>, a medium-sized vanilla <a class="reference external" href="https://arxiv.org/abs/1505.04597">UNet image segmentation net</a> trained on the <a class="reference external" href="https://www.kaggle.com/residentmario/segmented-bob-ross-images">Segmented Bob Ross Images corpus</a>. <a class="reference external" href="https://github.com/ResidentMario/spell-unet-bob-ross">Get the code here</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BERT</span></code>, a large NLP transformer model using the <code class="docutils literal notranslate"><span class="pre">bert-base-uncased</span></code> model backbone (via <code class="docutils literal notranslate"><span class="pre">huggingface</span></code>) and data from the <a class="reference external" href="https://www.kaggle.com/c/tweet-sentiment-extraction">Twitter Sentiment Extraction</a> competition on Kaggle. <a class="reference external" href="https://github.com/ResidentMario/spell-tweet-sentiment-extraction">Get the code here</a>.</p></li>
+</ul>
+<p>The results:</p>
+<p><img alt="Timing benchmarks" src="_images/timing-benchmarks.avif" /></p>
+<p>Because the feedforward network is very small, it gets no benefit from mixed precision training.</p>
+<p>UNet, a medium-sized convolutional model with 7,703,497 total parameters, sees significant benefits from enabling mixed precision training. Interestingly, though the V100 and T4 both benefit from mixed precision training, the benefit to the T4 is much greater: a 5% time save versus a whopping 30% time save.</p>
+<p>BERT is a large model, and it’s where the time savings of using mixed precision training go from “nice” to “must-have”. Automatic mixed precision will cut training time for large models trained on Volta or Turing GPU by 50 to 60 percent! 🔥</p>
+<p>This is a huge, huge benefit, especially when you take into account the minimal complexity required — just four or five LOC to your model training script. In my opinion:</p>
+<p><strong>Mixed precision should be one of the first performance optimization you make to your model training scripts.</strong></p>
+</div>
+<div class="section" id="what-about-memory">
+<h2>What about memory?<a class="headerlink" href="#what-about-memory" title="Permalink to this headline">¶</a></h2>
+<p>As I explained in the section “How mixed precision works”, an <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix is half the size of a <code class="docutils literal notranslate"><span class="pre">fp32</span></code> matrix in memory, so another purported advantage of mixed precision training is memory usage. GPU memory is much less of a bottleneck than GPU compute, but it’s still pretty valuable to optimize. The more efficient your memory usage, the larger the batch sizes you can fit on the GPU.</p>
+<p>PyTorch reserves a certain amount of GPU memory at the beginning of the model training process and holds onto that memory for the duration of the training job. This keeps other processes from reserving too much GPU memory mid-training, forcing the PyTorch training script to crash with an OOM error.</p>
+<p>Here is the impact that enabling mixed precision training has on the PyTorch memory reservation behavior:</p>
+<p><img alt="Memory benchmarks" src="_images/memory-benchmarks.avif" /></p>
+<p>Interestingly enough, while both of the larger models saw benefit from the swap to mixed precision, UNet benefited from the swap a lot more than BERT did. PyTorch memory allocation behavior is pretty opaque to me, so I have no insight into why this might be the case.</p>
+<p>To learn more about mixed precision training directly from the source, see the <a class="reference external" href="https://pytorch.org/docs/master/amp.html">automatic mixed precision package</a> and <a class="reference external" href="https://pytorch.org/docs/master/notes/amp_examples.html">automatic mixed precision examples</a> pages in the PyTorch master docs.</p>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="model-distributed-training.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Model-Distributed Training</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="assorted-tricks.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Assorted Tricks</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

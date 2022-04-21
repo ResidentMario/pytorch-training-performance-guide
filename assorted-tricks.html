@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assorted Tricks &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Mixed Precision" href="mixed-precision.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="lr-sched-and-optim.html">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gradient-checkpoints.html">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="jit.html">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pruning.html">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/assorted-tricks.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#use-pinned-memory-and-multiprocessing-for-data-loading">
+   Use pinned memory and multiprocessing for data loading
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#turn-on-cudnn-benchmarking">
+   Turn on cudNN benchmarking
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#use-non-blocking-device-memory-transfers">
+   Use non-blocking device memory transfers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#try-using-multiple-batches-per-gradient-update">
+   Try using multiple batches per gradient update
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#instead-of-zeroing-out-the-gradient-set-it-to-none">
+   Instead of zeroing out the gradient, set it to None
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#use-gradient-clipping">
+   Use gradient clipping
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#disable-bias-in-convolutional-layers-before-batchnorm">
+   Disable bias in convolutional layers before batchnorm
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Assorted Tricks</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#use-pinned-memory-and-multiprocessing-for-data-loading">
+   Use pinned memory and multiprocessing for data loading
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#turn-on-cudnn-benchmarking">
+   Turn on cudNN benchmarking
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#use-non-blocking-device-memory-transfers">
+   Use non-blocking device memory transfers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#try-using-multiple-batches-per-gradient-update">
+   Try using multiple batches per gradient update
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#instead-of-zeroing-out-the-gradient-set-it-to-none">
+   Instead of zeroing out the gradient, set it to None
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#use-gradient-clipping">
+   Use gradient clipping
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#disable-bias-in-convolutional-layers-before-batchnorm">
+   Disable bias in convolutional layers before batchnorm
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="assorted-tricks">
+<h1>Assorted Tricks<a class="headerlink" href="#assorted-tricks" title="Permalink to this headline">¶</a></h1>
+<p>While what constitutes a “trick” certainly varies from person to person; by “trick” here, I mean a simple technique that is straightforward to implement (in a few lines of code) and understand (in a few paragraphs at most). Splitting data loading across multiple processes is a good example, and mixed-precision training is, in my opinion, a good counterexample—though simple to implement, it requires quite a bit of thought to understand. However, again, YMMV.</p>
+<div class="section" id="use-pinned-memory-and-multiprocessing-for-data-loading">
+<h2>Use pinned memory and multiprocessing for data loading<a class="headerlink" href="#use-pinned-memory-and-multiprocessing-for-data-loading" title="Permalink to this headline">¶</a></h2>
+<p>A page is an atomic unit of memory in OS-level virtual memory management. A standard (small, “old-school”) page size is <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">KiB</span></code>; larger page sizes are possible on modern OSes and systems.</p>
+<p>Paging is the act of storing and retrieving memory pages from disk to main memory. Paging is used to allow the working memory set of the applications running on the OS to exceed the total RAM size.</p>
+<p>All memory is managed in pages, but paging is only used when the working set spills to disk. <strong>Non-paged memory</strong> is memory that is in RAM, e.g. it has not been spilled to disk.</p>
+<p>In CUDA, non-paged CPU (RAM) memory is referred to as <strong>pinned memory</strong>. Pinning a block of memory can be done via a CUDA API call, which issues an OS call that reserves the memory block and sets the constraint that it cannot be spilled to disk.</p>
+<p>Pinned memory is used to speed up a CPU to GPU memory copy operation (as executed by e.g. <code class="docutils literal notranslate"><span class="pre">tensor.cuda()</span></code> in PyTorch) by ensuring that none of the memory that is to be copied is on disk. Memory cached to disk has to be read into RAM before it can be transferred to the GPU—e.g. it has to be copied twice. You can naively expect this to be twice as slow (the true slowness depends on the size and business of the relevant memory buses). The following diagram, taken from this blog post, illustrates:</p>
+<p><img alt="Pinned memory" src="_images/pinned-memory.avif" /></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pin_memory</span></code> field (<code class="docutils literal notranslate"><span class="pre">pin_memory=True</span></code>) on <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> invokes this memory management model. Keep in mind that this technique requires that the OS is willing to give the PyTorch process as much main memory as it needs to complete its load and transform operations—e.g. the batch must fit into RAM in its entirety.</p>
+<p><a class="reference external" href="https://stackoverflow.com/questions/55563376/pytorch-how-does-pin-memory-works-in-dataloader">This SO answer</a> is also a good reference (note that the <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> API has been moved; see notes further down).</p>
+<p>This is one half of this optimization. The other half is the use of nonblocking data loading.</p>
+<p>The default settings for <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> load the data and executes transforms on it in the model’s executing process. This is single-threaded (due to <a class="reference external" href="https://www.youtube.com/watch?v=7RlqbHCCVyc">the GIL</a>) and blocking.</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> to a value other than its default 0 will spin up worker processes that individually load and transform the data (e.g. multiprocessing) and load it into the main memory of the host process.</p>
+<p>Workers are created whenever an iterator is created from the <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>, e.g. at enumerate time (presumably by hooking into <code class="docutils literal notranslate"><span class="pre">__iter__()</span></code>). They are destroyed when <code class="docutils literal notranslate"><span class="pre">StopIterator</span></code> is reached, or when the iterator is garbage collected. They receive the following objects from the parent (via IPC): the wrapped <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> object, a <code class="docutils literal notranslate"><span class="pre">worker_int_fn</span></code>, and a <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code>. A <code class="docutils literal notranslate"><span class="pre">torch.utils.data.get_worker_info</span></code> API may be used to write code specific to each worker within these ops.</p>
+<p>Data loading via worker processes is trivially easy to do when the root dataset is of a map type—the parent process will handle assigning the indices of the data to load to the workers. Datasets of an iterator type are harder to work with; you will have to use the APIs above to handle slicing them appropriately.</p>
+<p>Non-blocking loading has two benefits.</p>
+<p>First, it means that any code in between fetching a fresh data batch and executing the <code class="docutils literal notranslate"><span class="pre">.to('cuda')</span></code> call transferring that data to GPU will be concurrent with the loading process, allowing you to do some other work in the main process while dataset processing is still in progress in the worker processes. This would be an ideal place to put e.g. a network call to wandb or something similar.</p>
+<p>Second, since batch loading is now split amongst the workers, the process of loading batches of data that are nontrivial in size is made much faster.</p>
+<p>The <a class="reference external" href="https://www.youtube.com/watch?v=9mS1fIYj1So">PyTorch Performance Tuning Guide talk</a> shows the following benchmarks for num_workers optimization of <a class="reference external" href="https://github.com/pytorch/examples/blob/master/mnist/main.py">a trivial MNIST example</a>:</p>
+<p><img alt="Num workers optimization" src="_images/num-workers.avif" /></p>
+<p>This script doesn’t even use the first optimization, only the second one.</p>
+<p>The rule of thumb is to use four times as many processes as you have GPUs.</p>
+</div>
+<div class="section" id="turn-on-cudnn-benchmarking">
+<h2>Turn on cudNN benchmarking<a class="headerlink" href="#turn-on-cudnn-benchmarking" title="Permalink to this headline">¶</a></h2>
+<p>This optimization is specific to models that make heavy use of convolutional layers (e.g. vanilla convolutional neural networks, or model architecture that feature a CNN backbone).</p>
+<p>Convolutional layers use a well-defined mathematical operation, <a class="reference external" href="https://en.wikipedia.org/wiki/Convolution">convolution</a>, which holds foundational importance in a huge variety of applications: image processing, signal processing, statistical modeling, compression, the list goes on and on. As a consequence, a large number of different algorithms have been developed for computing convolutions efficiently on different array sizes and hardware platforms.</p>
+<p>PyTorch transitively relies on <a class="reference external" href="https://developer.nvidia.com/cudnn">NVIDIA’s cuDNN framework</a> for the implementations of these algorithms. <code class="docutils literal notranslate"><span class="pre">cuDNN</span></code> has a <a class="reference external" href="https://discuss.pytorch.org/t/what-does-torch-backends-cudnn-benchmark-do/5936">benchmarking API</a>, which runs a short program to chose an algorithm for performing convolution which is optimal for the given array shape and hardware.</p>
+<p>You can enable benchmarking by setting <code class="docutils literal notranslate"><span class="pre">torch.backends.cudnn.benchmark</span> <span class="pre">=</span> <span class="pre">True</span></code>. Thereafter, the first time a convolution of a particular size is run on your GPU device, a fast benchmark program will be run first to determine the best cuDDN convolutional implementation for that given input size is. Thereafter every convolutional operation on a same-sized matrix will use that algorithm instead of the default one.</p>
+<p>Again drawing from the <a class="reference external" href="https://www.youtube.com/watch?v=9mS1fIYj1So">PyTorch Performance Tuning Guide</a> talk, we can see the magnitude of the benefit:</p>
+<p><img alt="cuDNN benchmarking" src="_images/cudnn-benchmarking.avif" /></p>
+<p>Keep in mind that using <code class="docutils literal notranslate"><span class="pre">cudNN</span></code> benchmarking will only result in a speed if you keep the input size (the shape of the batch tensor you pass to <code class="docutils literal notranslate"><span class="pre">model(batch)</span></code>) fixed. Otherwise, benchmarking will fire every time input size changes. Since the vast majority of models use a fixed tensor shape and batch size, this shouldn’t usually be a problem.</p>
+</div>
+<div class="section" id="use-non-blocking-device-memory-transfers">
+<h2>Use non-blocking device memory transfers<a class="headerlink" href="#use-non-blocking-device-memory-transfers" title="Permalink to this headline">¶</a></h2>
+<p>There are a few individual subheadings here.</p>
+<p>When creating a new tensor, instead of creating the tensor in host memory and then transferring it to GPU via <code class="docutils literal notranslate"><span class="pre">.cuda()</span></code>, create it directly in CUDA using the <code class="docutils literal notranslate"><span class="pre">device='cuda'</span></code> argument to <code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code>.</p>
+<p>When you do transfer memory, it is sometimes useful to enable asynchronous (non-blocking) transfer via <code class="docutils literal notranslate"><span class="pre">.to(non_blocking=True)</span></code>. As long as there is no synchronization point—method call that requires access to this tensor’s data, and hence blocks until the transfer is complete—immediately thereafter, this is another way of achieving concurrency.</p>
+<p>The most important scenario where this is true is when loading data using <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> with <code class="docutils literal notranslate"><span class="pre">pin_memory=True</span></code>. Low-level CUDA optimizations <a class="reference external" href="https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/">explained here on the NVIDIA blog</a> allow certain types of data transfers onto the GPU device <strong>from pinned memory only</strong> to execute concurrently with GPU kernel processes. Here is a visualization from that blog post that summarizes how it works:</p>
+<p><img alt="Async GPU loading" src="_images/async-gpu-loading.avif" /></p>
+<p>In the first (sequential) example, data loading blocks kernel execution and vice versa. In the latter two (concurrent) examples, the load and execute tasks are first broken down into smaller subtasks, then pipelined in a <a class="reference external" href="https://en.wikipedia.org/wiki/Just-in-time_compilation">just-in-time</a> manner.</p>
+<p>PyTorch uses this feature to pipeline GPU code execution alongside GPU data transfer:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># assuming the loader call uses pinned memory</span>
+<span class="c1"># e.g. it was DataLoader(..., pin_memory=True)</span>
+<span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
+    <span class="c1"># these two calls are also nonblocking</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># model(data) is blocking, so it&#39;s a synchronization point</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, taken from <a class="reference external" href="https://discuss.pytorch.org/t/should-we-set-non-blocking-to-true/38234/4">this discuss.pytorch.org thread</a>, <code class="docutils literal notranslate"><span class="pre">model(data)</span></code> is the first synchronization point. Creating the data and target tensors, moving the data tensor to GPU, and moving the target tensor to GPU, and then performing a forward pass in the model, are pipelined for you by PyTorch and CUDA.</p>
+<p>The details of how this is done are inscrutable to the end-user. Suffice to say, the end result looks less like Sequential Version and more like Asynchronous Version 2.</p>
+<p>Outside of this special case, non-blocking I/O allows you to do some other work in the main process while dataset processing is still in progress in the worker processes. Immediately after some non-blocking data transfer calls would be an ideal place to put e.g. a network call to <code class="docutils literal notranslate"><span class="pre">wandb</span></code> or something similar.</p>
+</div>
+<div class="section" id="try-using-multiple-batches-per-gradient-update">
+<h2>Try using multiple batches per gradient update<a class="headerlink" href="#try-using-multiple-batches-per-gradient-update" title="Permalink to this headline">¶</a></h2>
+<p>Forward propagating some values through a neural network in train mode creates a computational graph that assigns a weight (a gradient) to every free parameter in the model. Backpropagation then adjusts these gradients to more accurate (“better”) values, consuming the computational graph in the process.</p>
+<p>However, not every forward pass needs to have a backward pass. In other words, you can call <code class="docutils literal notranslate"><span class="pre">model(batch)</span></code> as many times as you’d like before you finally call <code class="docutils literal notranslate"><span class="pre">loss.backward()</span></code>. The computational graph will continue to accumulate gradients until you finally decide to collapse them all.</p>
+<p>For models whose performance is bottlenecked by GPU memory, and hence, batch size—a lot of NLP models, in particular, have this problem—this simple technique offers an easy way to get a “virtual” batch size larger than will fit in memory.</p>
+<p>For example, if you can only fit <code class="docutils literal notranslate"><span class="pre">16</span></code> samples per batch in GPU memory, you can forward pass two batches, then backward pass once, for an effective batch size of <code class="docutils literal notranslate"><span class="pre">32</span></code>. Or forward pass four times, backwards pass once, for a batch size of <code class="docutils literal notranslate"><span class="pre">64</span></code>. And so on.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">huggingface</span></code> <a class="reference external" href="https://medium.com/huggingface/training-larger-batches-practical-tips-on-1-gpu-multi-gpu-distributed-setups-ec88c3e51255">Training Neural Nets on Larger Batches</a> blog post provides the following code sample illustrating how this works:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>                                   <span class="c1"># Reset gradients tensors</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">training_set</span><span class="p">):</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>                     <span class="c1"># Forward pass</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>       <span class="c1"># Compute loss function</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="o">/</span> <span class="n">accumulation_steps</span>                <span class="c1"># Normalize our loss (if averaged)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>                                 <span class="c1"># Backward pass</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">accumulation_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>             <span class="c1"># Wait for several backward steps</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>                            <span class="c1"># Now we can do an optimizer step</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>                           <span class="c1"># Reset gradients tensors</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">evaluation_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>           <span class="c1"># Evaluate the model when we...</span>
+            <span class="n">evaluate_model</span><span class="p">()</span>                        <span class="c1"># ...have no gradients accumulated</span>
+</pre></div>
+</div>
+<p>Notice that you’ll need to combine the per-batch losses somehow. You can usually just take the average.</p>
+<p>There’s only one downside to using multiple batches instead of one that I’m aware of: any fixed costs that occur during training—latency when transferring data between host and GPU memory, for example—will be paid twice.</p>
+</div>
+<div class="section" id="instead-of-zeroing-out-the-gradient-set-it-to-none">
+<h2>Instead of zeroing out the gradient, set it to None<a class="headerlink" href="#instead-of-zeroing-out-the-gradient-set-it-to-none" title="Permalink to this headline">¶</a></h2>
+<p>Proceeding with a new batch of training requires clearing out the gradients accumulated thus far. Historically, this has been done by calling <code class="docutils literal notranslate"><span class="pre">model.zero_grad()</span></code> immediately before calling <code class="docutils literal notranslate"><span class="pre">model(batch)</span></code>. E.g.:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+    <span class="c1"># zero out gradients, forward prop...</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># ...then back prop.</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This sets all of the gradients attached to free weights in the model to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+<p>PyTorch 1.7 adds a new option to <code class="docutils literal notranslate"><span class="pre">zero_grad</span></code>: <code class="docutils literal notranslate"><span class="pre">model.zero_grad(set_to_none=True)</span></code>. In this mode gradients are initialized with <code class="docutils literal notranslate"><span class="pre">None</span></code> instead of <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+<p>Null initialization is slightly more performant than zero initialization for the following three reasons.</p>
+<p>One, zero initialization requires writing a value (<code class="docutils literal notranslate"><span class="pre">0</span></code>) to memory, null initialization does not (presumably it creates a bitwise nullity mask instead).</p>
+<p>Two, null initialization will change the first update to the gradient value from a “sum” operation (which requires a read-write) to an “assign” operation (which only requires a write), which is slightly faster.</p>
+<p>Three, <code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> optimizers will still perform a gradient update on gradients with value <code class="docutils literal notranslate"><span class="pre">0</span></code>. Though some sophisticated optimizers may still calculate a non-zero weight update in this scenario (due to things like annealing, weighted averaging, weight decay) this is usually not very important to model convergence. <code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> optimizers completely skip updating <code class="docutils literal notranslate"><span class="pre">None</span></code>-valued gradients, saving time.</p>
+<p>Due to the third effect, this parameter is technically not side-effect free. Nevertheless, I feel comfortable recommending switching to using m<code class="docutils literal notranslate"><span class="pre">odel.zero_grad(set_to_none=True)</span></code> everywhere by default. You can always try turning it off later, to see if it makes a difference.</p>
+</div>
+<div class="section" id="use-gradient-clipping">
+<h2>Use gradient clipping<a class="headerlink" href="#use-gradient-clipping" title="Permalink to this headline">¶</a></h2>
+<p>Gradient clipping is the technique, originally developed for handling exploding gradients in RNNs, of clipping gradient values that get to be too large to a more realistic maximum value. Basically, you set a <code class="docutils literal notranslate"><span class="pre">max_grad</span></code>, and PyTorch applies <code class="docutils literal notranslate"><span class="pre">min(max_grad,</span> <span class="pre">actual_grad)</span></code> at backpropagation time (note that gradient clipping is bidirectional—a <code class="docutils literal notranslate"><span class="pre">max_grad</span></code> of <code class="docutils literal notranslate"><span class="pre">10</span></code> will ensure that gradient values fall in the range <code class="docutils literal notranslate"><span class="pre">[-10,</span> <span class="pre">10]</span></code>).</p>
+<p>The paper <a class="reference external" href="https://iclr.cc/virtual_2020/poster_BJgnXpVYwS.html">Why Gradient Clipping Accelerates Training: A Theoretical Justification for Adaptivity</a> shows (and provides some theoretical justification for why) gradient clipping can improve convergence behavior, potentially allowing you to choose a higher learning rate (and hence converge to an optimized model more quickly):</p>
+<p><img alt="Gradient clipping encouraging conversion" src="_images/gradient-clipping-convergence.avif" /></p>
+<p>Gradient clipping in PyTorch is provided via <code class="docutils literal notranslate"><span class="pre">torch.nn.utils.clip_grad_norm_</span></code>. You can apply it to individual parameter groups on a case-by-case basis, but the easiest and most common way to use it is to apply the clip to the model as a whole:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">max_grad</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This code sample is taken from the <code class="docutils literal notranslate"><span class="pre">huggingface</span></code> <code class="docutils literal notranslate"><span class="pre">transformer</span></code> codebase <a class="reference external" href="https://github.com/huggingface/transformers/blob/7729ef738161a0a182b172fcb7c351f6d2b9c50d/examples/run_squad.py#L156">here</a>.</p>
+<p>What should <code class="docutils literal notranslate"><span class="pre">max_grad</span></code> be set to? Unfortunately, this is not an easy question to answer, as what constitutes a “reasonable” magnitude varies wildly. It’s best to treat this value as another hyperparameter to be tuned. The 2013 paper <a class="reference external" href="https://arxiv.org/abs/1308.0850">Generating Sequences With Recurrent Neural Networks</a> used the value <code class="docutils literal notranslate"><span class="pre">10</span></code> for the intermediate layers and <code class="docutils literal notranslate"><span class="pre">100</span></code> for the output head.</p>
+</div>
+<div class="section" id="disable-bias-in-convolutional-layers-before-batchnorm">
+<h2>Disable bias in convolutional layers before batchnorm<a class="headerlink" href="#disable-bias-in-convolutional-layers-before-batchnorm" title="Permalink to this headline">¶</a></h2>
+<p>Basically every modern neural network architecture uses some form of normalization, with the OG batch norm being the most common.</p>
+<p>PyTorch’s basic batch norm layer (<code class="docutils literal notranslate"><span class="pre">torch.nn.BatchNorm2d</span></code>) has a <code class="docutils literal notranslate"><span class="pre">bias</span></code> tensor. If the prior layer (1) also has a <code class="docutils literal notranslate"><span class="pre">bias</span></code> tensor (2) applied to the same axis as the batch norm <code class="docutils literal notranslate"><span class="pre">bias</span></code> tensor (3) that is not then squashed by an activation function, the two bias tensors are duplicating work.</p>
+<p>In this scenario, it is safe to disable the previous layer’s bias term by passing <code class="docutils literal notranslate"><span class="pre">bias=False</span></code> at layer initialization time, shaving some parameters off of total model size.</p>
+<p>This optimization is most commonly applicable to convolutional layers, which very often use a <code class="docutils literal notranslate"><span class="pre">Conv</span> <span class="pre">-&gt;</span> <span class="pre">BatchNorm</span> <span class="pre">-&gt;</span> <span class="pre">ReLU</span></code> block. For example, <a class="reference external" href="https://github.com/spellml/mobilenet-cifar10/blob/a2914d11f8fdc36618f3d397d9439e9addf5ea16/servers/eval.py#L52">here’s a block used by MobileNet</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">ReLU6</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>Here’s an example of a block where this optimization doesn’t apply:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(),</span>
+</pre></div>
+</div>
+<p>In this case, even though <code class="docutils literal notranslate"><span class="pre">nn.Linear</span></code> does have a bias term on the same axis as <code class="docutils literal notranslate"><span class="pre">nn.BatchNorm2d</span></code>, the effect of that term is being squeezed non-linearly by ReLU, so there is no actual duplicate work.</p>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="mixed-precision.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Mixed Precision</p>
+        </div>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

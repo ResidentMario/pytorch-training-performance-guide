@@ -1,0 +1,416 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LR Schedulers, Adaptive Optimizers &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Gradient Checkpoints" href="gradient-checkpoints.html" />
+    <link rel="prev" title="Home" href="intro.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gradient-checkpoints.html">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="jit.html">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pruning.html">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="assorted-tricks.html">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/lr-sched-and-optim.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reducelronplateau-the-first-lr-scheduler">
+   ReduceLROnPlateau, the first LR scheduler
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#adaptive-optimizers">
+   Adaptive optimizers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cosine-annealed-warm-restart">
+   Cosine annealed warm restart
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#one-cycle-learning-rate-schedulers">
+   One-cycle learning rate schedulers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-view-from-2021">
+   The view from 2021
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>LR Schedulers, Adaptive Optimizers</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reducelronplateau-the-first-lr-scheduler">
+   ReduceLROnPlateau, the first LR scheduler
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#adaptive-optimizers">
+   Adaptive optimizers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cosine-annealed-warm-restart">
+   Cosine annealed warm restart
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#one-cycle-learning-rate-schedulers">
+   One-cycle learning rate schedulers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-view-from-2021">
+   The view from 2021
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="lr-schedulers-adaptive-optimizers">
+<h1>LR Schedulers, Adaptive Optimizers<a class="headerlink" href="#lr-schedulers-adaptive-optimizers" title="Permalink to this headline">¶</a></h1>
+<p>A long long time ago, almost all neural networks were trained using a fixed learning rate and the stochastic gradient descent (SGD) optimizer.</p>
+<p>Then the whole deep learning revolution thing happened, leading to a whirlwind of new techniques and ideas. In the area of model optimization, the two most influential of these new ideas have been <strong>learning rate schedulers</strong> and <strong>adaptive optimizers</strong>.</p>
+<p>In this chapter, we will discuss the history of learning rate schedulers and optimizers, leading up to the two techniques best-known among practitioners today: <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> and the <code class="docutils literal notranslate"><span class="pre">Adam</span></code> optimizer. We will discuss the relative merits of these two techniques.</p>
+<p><strong>TLDR</strong>: you can stick to <code class="docutils literal notranslate"><span class="pre">Adam</span></code> (or one of its derivatives) during the development stage of the project, but you should try additionally incorporating <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> into your model as well eventually.</p>
+<div class="section" id="reducelronplateau-the-first-lr-scheduler">
+<h2>ReduceLROnPlateau, the first LR scheduler<a class="headerlink" href="#reducelronplateau-the-first-lr-scheduler" title="Permalink to this headline">¶</a></h2>
+<p>All optimizers have a <strong>learning rate</strong> hyperparameter, which is one of the most important hyperparameters affecting model performance.</p>
+<p>In the simplest case, the learning rate is kept fixed. However, it was discovered relatively early on that choosing a large initial learning rate then shrinking it over time leads to better converged, more performant models. This is known as <strong>learning rate annealing</strong> (or decay).</p>
+<p>In the early stages of model training, the model is still making large steps towards the gradient space, and a large learning rate helps it find the coarse values it needs more quickly.</p>
+<p>In the late stages of model training, the opposite is true. The model has approximately the right gradients already; it just needs a little extra push to find the last few percentage points of performance. A large gradient is no longer appropriate because it will “overshoot” the point of optimality. Instead of converging on the global cost minima, the model will bounce around it:</p>
+<p><img alt="An unstable learner that is missing the true local minima." src="_images/unstable-learner.avif" /></p>
+<p>This observation led to the popularization of the first well-known learning rate scheduler, <code class="docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code> (<code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.ReduceLROnPlateau</span></code> in PyTorch). <code class="docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code> takes a <code class="docutils literal notranslate"><span class="pre">step_size</span></code>, a <code class="docutils literal notranslate"><span class="pre">patience</span></code>, and a <code class="docutils literal notranslate"><span class="pre">cooldown</span></code> as input. After completing each batch of training, the model checks whether or not model performance has improved. If model performance hasn’t improved in <code class="docutils literal notranslate"><span class="pre">patience</span></code> batches, the learning rate is reduced (typically by a factor of 10). After a cooldown period, this process is repeated again, until the final batch of training completes.</p>
+<p>This technique has squeezed out an extra percentage point or two of performance in pretty much every context it’s been tried in. As a result, some combination of <code class="docutils literal notranslate"><span class="pre">EarlyStopping</span></code>, <code class="docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code>, and <code class="docutils literal notranslate"><span class="pre">SGD</span></code> was the state of the art until 2015.</p>
+</div>
+<div class="section" id="adaptive-optimizers">
+<h2>Adaptive optimizers<a class="headerlink" href="#adaptive-optimizers" title="Permalink to this headline">¶</a></h2>
+<p>2015 saw the release of Adam: A Method For Stochastic Optimization. This paper introduced <code class="docutils literal notranslate"><span class="pre">Adam</span></code> (<code class="docutils literal notranslate"><span class="pre">torch.optim.Adam</span></code> in PyTorch), the first so-called adaptive optimizer to gain widespread traction.</p>
+<p><strong>Adaptive optimizers</strong> eschew the use of a separate learning rate scheduler, instead embedding learning rate optimization directly into the optimizer itself. <code class="docutils literal notranslate"><span class="pre">Adam</span></code> actually goes one step further, managing the learning rates on a per-weight basis. In other words, it gives every free variable in the model its own learning rate. The value <code class="docutils literal notranslate"><span class="pre">Adam</span></code> actually assigns to this learning rate is an implementation detail of the optimizer itself, and not something you can manipulate directly.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Adam</span></code> has two compelling advantages over <code class="docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code>.</p>
+<p>One, model performance. It’s a better optimizer, full stop. Simply put, it trains higher-performance models.</p>
+<p>Two, <code class="docutils literal notranslate"><span class="pre">Adam</span></code> is almost parameter-free. <code class="docutils literal notranslate"><span class="pre">Adam</span></code> does have a learning rate hyperparameter, but the adaptive nature of the algorithm makes it quite robust—unless the default learning rate is off by an order of magnitude, changing it doesn’t affect performance much.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Adam</span></code> is not the first adaptive optimizer—that honor goes to <code class="docutils literal notranslate"><span class="pre">Adagrad</span></code>, published in 2011—but it was the first one robust enough and fast enough for general-purpose usage. Upon its release, <code class="docutils literal notranslate"><span class="pre">Adam</span></code> immediately overtook <code class="docutils literal notranslate"><span class="pre">SGD</span></code> plus <code class="docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code> as the state of the art in most applications. We’ve seen improved variants (like <code class="docutils literal notranslate"><span class="pre">Adamw</span></code>) since then, but these have yet to displace vanilla <code class="docutils literal notranslate"><span class="pre">Adam</span></code> in general-purpose usage.</p>
+</div>
+<div class="section" id="cosine-annealed-warm-restart">
+<h2>Cosine annealed warm restart<a class="headerlink" href="#cosine-annealed-warm-restart" title="Permalink to this headline">¶</a></h2>
+<p>The next big step forward in this space was arguably the 2017 paper <a class="reference external" href="https://arxiv.org/abs/1608.03983">SGDR: Stochastic Gradient Descent with Warm Restarts</a> popularized the idea of warm restarts. A learning rate scheduler that incorporates warm restarts occasionally re-raises the learning rate. A simple linear example showing how this is done:</p>
+<p><img alt="An annealled sawtooth learning rate." src="_images/lr-sawtooth.avif" /></p>
+<p>Warm restarts usually actually cause the model to diverge. This is done on purpose. It turns out that adding some controlled divergence allows the model to work around local minima in the task’s cost surface, allowing it to find an even better global minima instead. This is akin to finding a valley, then climbing a nearby hill, and discovering an even deeper valley one region over. Here’s a visual summary:</p>
+<p><img alt="Two learners moves around a cost surface." src="_images/cost-surface-discovery.avif" /></p>
+<p>Both of these learners converge to the same global minima. However, on the left, the learner trundles slowly along a low-gradient path. On the right, the learner falls into a sequence of local minima (valleys), then uses warm restarts to climb over them (hills). In the process it finds the same global minima faster, because the path it follows has a much higher gradient overall.</p>
+<p><a class="reference external" href="https://www.fast.ai/">fast.ai</a> popularized a learning rate scheduler that uses both warm restarts and cosine annealing. This scheduler has the following shape:</p>
+<p><img alt="Two learners moves around a cost surface." src="_images/cosine-annealing.avif" /></p>
+<p>Cosine annealing has better convergence behavior than linear annealing, for reasons that are not entirely understood.</p>
+<p>This learning rate scheduler was the default one used by the <code class="docutils literal notranslate"><span class="pre">fastai</span></code> framework for a couple of years. It was first made available in PyTorch (as <code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler</span></code>.CosineAnnealingLR) in version 0.3.1, released in February 2018 (<a class="reference external" href="https://github.com/pytorch/pytorch/releases/tag/v0.3.1">release notes</a>, <a class="reference external" href="https://github.com/pytorch/pytorch/pull/3311">GH PR</a>).</p>
+</div>
+<div class="section" id="one-cycle-learning-rate-schedulers">
+<h2>One-cycle learning rate schedulers<a class="headerlink" href="#one-cycle-learning-rate-schedulers" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fastai</span></code> no longer recommends cosine annealing because it is no longer the most performant general-purpose learning rate scheduler. These days, that honor belongs to the one-cycle learning rate scheduler.</p>
+<p>The one-cycle learning rate scheduler was introduced in the 2017 paper <a class="reference external" href="https://arxiv.org/abs/1708.07120">Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates</a>. The paper uses the following learning rate policy (which is applied over both learning rate and momentum):</p>
+<p><img alt="A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern." src="_images/one-cycle-paper-figure.avif" /></p>
+<p>Optimally, learning rate and momentum should be set to a value which just causes the network to begin to diverge at its peak. The remainder of the training regimen consists of warm-up, cool-down, and fine-tuning periods. Note that, during the fine-tuning period, the learning rate drops to 1/10th of its initial value.</p>
+<p>Momentum is counterproductive when the learning rate is very high, which is why momentum is annealed in the opposite of the way in which the learning rate is annealed in the optimizer.</p>
+<p>The one-cycle learning rate scheduler uses more or less the same mechanism that the cosine annealed warm restarts learning rate scheduler uses, just in a different form factor.</p>
+<p>In their implementation, <code class="docutils literal notranslate"><span class="pre">fastai</span></code> tweaks this a little bit, again switching from linear to cosine annealing:</p>
+<p><img alt="A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern." src="_images/fastai-one-cycle-behavior.avif" /></p>
+<p><code class="docutils literal notranslate"><span class="pre">fastai</span></code> recommendeded <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> plus vanilla <code class="docutils literal notranslate"><span class="pre">SGD</span></code> over <code class="docutils literal notranslate"><span class="pre">Adam</span></code> because, subject to some tuning (getting the maximum learning rate correct is particularly important), it trained models with roughly equal or marginally worse performance in a fraction of the time. This is due to a phenomenon that Leslie Smith, the once-cycle paper author, terms superconvergence. For example, the paper shows the following behavior on CIFAR10:</p>
+<p><img alt="A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern." src="_images/one-cycle-cifar10-perf.avif" /></p>
+<p>Though you shouldn’t count on results this compelling in practice, superconvergence has indeed been demonstrated on a broad range of datasets and problem domains.</p>
+<p>The one-cycle learning rate scheduler was implemented in PyTorch in August 2019 (as <code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.OneCycleLR</span></code>; here’s the <a class="reference external" href="https://github.com/pytorch/pytorch/pull/21258">GH PR</a>).</p>
+</div>
+<div class="section" id="the-view-from-2021">
+<h2>The view from 2021<a class="headerlink" href="#the-view-from-2021" title="Permalink to this headline">¶</a></h2>
+<p>The first version of the <code class="docutils literal notranslate"><span class="pre">fastai</span></code> course to teach OneCycleLR did so pairing <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> with vanilla <code class="docutils literal notranslate"><span class="pre">SGD</span></code> (as it was presented and used in the paper). However, the current version of the course now uses <code class="docutils literal notranslate"><span class="pre">Adam</span></code> and <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> (specifically, <code class="docutils literal notranslate"><span class="pre">Adamw</span></code>) as its default.</p>
+<p>This choice, and change, is explained at length in their blog post <a class="reference external" href="https://www.fast.ai/2018/07/02/adam-weight-decay/">AdamW and Super-convergence is now the fastest way to train neural nets</a>. The TLDR is that it wasn’t immediately clear that Adam performance was what it was made out to be in the academic literature of the time, and so the decision was made to cut it from the curriculum until further experimentation proved otherwise.</p>
+<p>Even so, the “naked” Adam optimizer is predominant amongst practitioners today. You can see this for yourself by browsing recent starter kernels for Kaggle competitions, <a class="reference external" href="https://www.kaggle.com/gogo827jz/jane-street-neural-network-starter">like this one</a>, where you’ll see that the use of Adam predominates. Because <code class="docutils literal notranslate"><span class="pre">Adam</span></code> is pretty much parameter-free, it’s much more robust to model changes than <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> is. This makes it much easier to develop with, as it’s one fewer set of hyperparameters that you have to optimize.</p>
+<p>However, once you’re in the later optimization stage of a medium-sized model training project, experimenting with moving off of <code class="docutils literal notranslate"><span class="pre">Adam</span></code> and onto <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> is well worth doing. Just imagine how much easier the lives of your data engineers will be if your model can achieve 98% of the performance in 25% of the time!</p>
+<p>Hyperconvergence is an extremely attractive property to have, if you can spend the time required to tune it.</p>
+<!--
+## To-do
+
+- Peformance benchmarks.
+-->
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="intro.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Home</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="gradient-checkpoints.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Gradient Checkpoints</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

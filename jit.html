@@ -1,0 +1,587 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JIT &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Model Pruning" href="pruning.html" />
+    <link rel="prev" title="Gradient Checkpoints" href="gradient-checkpoints.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="lr-sched-and-optim.html">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gradient-checkpoints.html">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pruning.html">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="assorted-tricks.html">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/jit.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#eager-versus-graph-execution">
+   Eager versus graph execution
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#using-pytorch-jit-in-scripting-mode">
+   Using PyTorch JIT in scripting mode
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#using-pytorch-jit-in-trace-mode">
+   Using PyTorch JIT in trace mode
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-payoffmake-custom-layers-go-fast">
+   The payoff—make custom layers go fast
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#conclusion">
+   Conclusion
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>JIT</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#eager-versus-graph-execution">
+   Eager versus graph execution
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#using-pytorch-jit-in-scripting-mode">
+   Using PyTorch JIT in scripting mode
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#using-pytorch-jit-in-trace-mode">
+   Using PyTorch JIT in trace mode
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-payoffmake-custom-layers-go-fast">
+   The payoff—make custom layers go fast
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#conclusion">
+   Conclusion
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="jit">
+<h1>JIT<a class="headerlink" href="#jit" title="Permalink to this headline">¶</a></h1>
+<p>PyTorch JIT (<code class="docutils literal notranslate"><span class="pre">torch.jit</span></code>) is a nifty feature of the PyTorch library, which holds the secret to implementing performant custom module code.</p>
+<p>If you’ve ever implemented a SOTA or near-SOTA neural network model, you’re very likely building and testing layer architectures from recent research that hasn’t yet landed in PyTorch core. Because these implementations have not been optimized by the PyTorch team, they are universally slower than their standard library equivalents.</p>
+<p>But it doesn’t have to be that way. In this blog post, we’ll provide an overview of <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code>: what it is, and at a high level, how it works. We’ll then look at some code samples that show how easy it is to use this API in practice, and some benchmarks showing how.</p>
+<p><strong>TLDR</strong>: <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> can be used to enable 2x-3x speedups on custom module code.</p>
+<div class="section" id="eager-versus-graph-execution">
+<h2>Eager versus graph execution<a class="headerlink" href="#eager-versus-graph-execution" title="Permalink to this headline">¶</a></h2>
+<p>In order to understand what <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> brings to the table, it’s necessary to first understand the difference between the two dominant models of execution in deep learning: eager and graph.</p>
+<p>A deep learning framework is said to use <strong>eager execution</strong> (or eager evaluation) if it builds its <strong>computational graph</strong> (the set of steps needed to perform forward or backwards propagation through the network) at runtime. PyTorch is the classic example of a framework which is eagerly evaluated. Every forward pass through a PyTorch model constructs an <code class="docutils literal notranslate"><span class="pre">autograd</span></code> computational graph; the subsequent call to backwards then consumes (and destroys!) this graph (for more on PyTorch <code class="docutils literal notranslate"><span class="pre">autograd</span></code>, <a class="reference external" href="https://www.kaggle.com/residentmario/pytorch-autograd-explained">see here</a>).</p>
+<p>Constructing and deconstructing objects in this way paves the way to a good developer experience. The code that’s actually executing the mathematical operations involved is ultimately a C++ or CUDA kernel, but the result of each individual operation is immediately transferred to (and accessible from) the Python process, because the Python process is the “intelligent” part—it’s what’s managing the computational graph as a whole. This is why debugging in PyTorch is as simple as dropping <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pdb;</span> <span class="pre">pdb.set_trace()</span></code> in the middle of your code.</p>
+<p>Alternatively, one may make use of <strong>graph execution</strong>. Graph execution pushes the management of the computational graph down to the kernel level (e.g. to a C++ process) by adding an additional compilation step to the process. The state is not surfaced back to the Python process until after execution is complete.</p>
+<p>Graph execution is faster than eager execution: the computational graph need only be built once, and the compiler can automatically find and apply optimizations to the code that aren’t possible in an interpreted context (compare the performance of Python with C, for example). However, this comes at the cost of developer experience. All of the interesting state is now managed by a C++ kernel. Debugging with <code class="docutils literal notranslate"><span class="pre">pdb</span></code> is no longer possible (you’ll need to attach <code class="docutils literal notranslate"><span class="pre">gdb</span></code> to the C++ process—not only is this a lot more work, but it also requires knowing a second programming language). Error messages are now bubbled-up C++ error messages, which tend to be opaque and hard to connect to their Python source.</p>
+<p>When PyTorch got its start back in 2016, it wasn’t immediately obvious which execution mode was better. By time of writing, January 2021, eager execution has emerged as the clear winner. PyTorch’s rapid growth in market share at the expense of TensorFlow is largely credited to its ease-of-use, which in turn is largely credited to its use of the eager execution model. TensorFlow, which used graph execution by default in version 1, switched to using eager execution by default in TensorFlow 2.</p>
+<p>That being said, graph execution still has its uses. In production settings, any gain in performance can produce significant reductions in the overall cost of running a model. And the pure C++ computational graphs graph execution produces are much more portable than Python computational graph. This is particularly important on embedded and mobile platforms, which offer only extremely limited Python support.</p>
+<p>For this reason, there has been some amount of co-evolution. TensorFlow, which started as a graph framework, now supports eager. And PyTorch, which started as an eager framework, now supports graph—<code class="docutils literal notranslate"><span class="pre">pytorch.jit</span></code>, the subject of this post.</p>
+<p>Here JIT stands for <a class="reference external" href="https://en.wikipedia.org/wiki/Just-in-time_compilation">just-in-time compilation</a>. In the next two sections, we’ll cover how it can be used. And in the section after that, we’ll cover why you should use it, looking at a benchmark showing how much of a performance <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> can create.</p>
+</div>
+<div class="section" id="using-pytorch-jit-in-scripting-mode">
+<h2>Using PyTorch JIT in scripting mode<a class="headerlink" href="#using-pytorch-jit-in-scripting-mode" title="Permalink to this headline">¶</a></h2>
+<p>JIT can be applied to PyTorch code in one of two ways. In this section, we’ll cover the first of these options, scripting. In the next, we’ll cover option two, tracing.</p>
+<p>To enable scripting, use the <code class="docutils literal notranslate"><span class="pre">jit.ScriptModule</span></code> class and the <code class="docutils literal notranslate"><span class="pre">&#64;torch.jit.script_method</span></code> decorator. This straightforwardly turns the wrapped module into a (compiler-supported) TorchScript function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.jit</span> <span class="k">as</span> <span class="nn">jit</span>
+
+<span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">jit</span><span class="o">.</span><span class="n">ScriptModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">():</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># [...]</span>
+
+    <span class="nd">@jit</span><span class="o">.</span><span class="n">script_method</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># [...]</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>After running this code, and instantiating this class, <code class="docutils literal notranslate"><span class="pre">MyModule</span></code> is a JIT-ed (compiled) module. The module is still a Python object, but almost all of its code execution now happens in C++.</p>
+<p><strong>TorchScript</strong> is a subset of Python that PyTorch knows how to dynamically inspect and transform into kernel code at runtime. The syntax is exactly the same as writing Python code, but uses wrappers from the <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> submodule to declare that the code should be JIT-ed. The TorchScript language reference describes the allowed subset of Python.</p>
+<p>The aim of the TorchScript project is to provide a restricted subset of Python which satisfies the properties that it is (1) useful for neural network programming and (2) easy to compile. The reference is the authoritative guide, but in general, this means things that are deterministic and side-effect free. To give a concrete example, looping over an (immutable) range or a tuple is allowed, but looping over a (mutable) list is not:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># allowed</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+<span class="c1"># allowed</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+<span class="c1"># not allowed (raises compile error)</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">a</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The third code sample here demonstrates why looping over a list is forbidden: it mutates (a side effect) whilst simultaneously iterating over its elements. The compiler cannot <a class="reference external" href="https://en.wikipedia.org/wiki/Loop_unrolling">unroll</a> this loop—so it forbids it entirely.</p>
+<p>In my experience, most PyTorch module code can be converted to TorchScript with not too much effort, assuming the person doing so is familiar with the codebase already. On the other hand, converting nontrivially complex code written by a different author tends to be quite hard.</p>
+</div>
+<div class="section" id="using-pytorch-jit-in-trace-mode">
+<h2>Using PyTorch JIT in trace mode<a class="headerlink" href="#using-pytorch-jit-in-trace-mode" title="Permalink to this headline">¶</a></h2>
+<p>Option two is to use tracing (<code class="docutils literal notranslate"><span class="pre">torch.jit.trace</span></code> for functions, <code class="docutils literal notranslate"><span class="pre">torch.jit.trace_module</span></code> for modules).</p>
+<p>Tracing has you run the code on some example inputs. PyTorch directly observes the execution in order to create a matching computational graph. Importantly, the code being traced does not need to be TorchScript-compatible; it can be arbitrary Python. Essentially PyTorch is automating the process of transforming lines of Python code into lines of TorchScript code for you:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># torch.jit.trace for functions</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="n">traced_foo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>
+
+<span class="c1"># torch.jit.trace for modules</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
+<span class="n">example_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">example_forward_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">traced_module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">example_forward_input</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After running this code, <code class="docutils literal notranslate"><span class="pre">traced_foo</span></code> and <code class="docutils literal notranslate"><span class="pre">traced_module</span></code> are JIT-ed (compiled) code objects that run almost completely in C++.</p>
+<p>Tracing has two limitations.</p>
+<p>One, tracing will destroy any control flow. Specifically, (1) any <code class="docutils literal notranslate"><span class="pre">if</span></code>-<code class="docutils literal notranslate"><span class="pre">else</span></code> in the module will only be evaluated on one code path, the code path that the same being traced passed through; and (2) for or while loops will be unrolled to a fixed-length sequence of operations. Note that PyTorch does offer an <code class="docutils literal notranslate"><span class="pre">&#64;torch.jit.unused</span></code> decorator that you can use to work around this problem (by excluding it from tracing; control flow isn’t typically a performance bottleneck anyway).</p>
+<p>Two, operations that evaluate differently based on whether the model is in <code class="docutils literal notranslate"><span class="pre">train</span></code> or <code class="docutils literal notranslate"><span class="pre">eval</span></code> mode will only execute in whatever mode the model was in at trace time. If you need to use modules that have such behavior (like <code class="docutils literal notranslate"><span class="pre">Dropout</span></code> or <code class="docutils literal notranslate"><span class="pre">BatchNorm2d</span></code>) or want to implement your own, the scripting approach—which doesn’t have this limitation—is the way to go.</p>
+</div>
+<div class="section" id="the-payoffmake-custom-layers-go-fast">
+<h2>The payoff—make custom layers go fast<a class="headerlink" href="#the-payoffmake-custom-layers-go-fast" title="Permalink to this headline">¶</a></h2>
+<p>The PyTorch JIT features can be used to make custom modules in your model more performant.</p>
+<p>High-performance machine learning models built to perform at or near SOTA on a given task will almost always contain at least a few custom modules taken from current research. For example, if you are running an image-to-image segmentation model, you may be interested in embedding recently published techniques like <a class="reference external" href="https://arxiv.org/abs/1903.07291">SPADE</a> into your model architecture.</p>
+<p>Since such specialized layers do not yet (and may never) have implementations built directly into the PyTorch library itself, using them in your model will require implementing them yourself. However, hand-implemented neural network modules are always slower than comparable modules taken from the PyTorch standard library, because they will be missing the many low-level optimizations that PyTorch has implemented over the years.</p>
+<p>To demonstrate, consider the following handwritten <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> layer, implemented using vanilla PyTorch (derived from <a class="reference external" href="https://discuss.pytorch.org/t/custom-convolution-layer/45979/5">this implementation</a>, with some improvements). You wouldn’t write such a layer in practice of course—you’d just use <code class="docutils literal notranslate"><span class="pre">torch.nn.Conv2d</span></code> instead. Nevertheless, it’s a good demonstration because it’s a nontrivial layer type that most machine learning practitioners understand quite well, making it’s a good stand-in for whatever you might be implementing yourself:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">class</span> <span class="nc">Conv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size_number</span> <span class="o">=</span> <span class="n">kernel_size</span> <span class="o">*</span> <span class="n">kernel_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span> <span class="o">=</span> <span class="n">dilation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">=</span> <span class="n">n_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Conv2d(n_channels=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="si">}</span><span class="s2">, out_channels=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;kernel_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_new_width</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_new_height</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">windows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_windows</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">i_conv_n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">):</span>
+                <span class="n">xx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">windows</span><span class="p">[</span><span class="n">channel</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">i_conv_n</span><span class="p">][</span><span class="n">channel</span><span class="p">])</span>
+                <span class="n">xx</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+
+                <span class="n">xx_stride</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">i_conv_n</span> <span class="o">*</span> <span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">i_conv_n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">xx_stride</span><span class="p">]</span> <span class="o">+=</span> <span class="n">xx</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">calculate_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">windows</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">),</span>
+            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">),</span>
+            <span class="n">dilation</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">),</span>
+            <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">windows</span> <span class="o">=</span> <span class="p">(</span><span class="n">windows</span>
+            <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
+            <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">windows</span>
+
+    <span class="k">def</span> <span class="nf">calculate_new_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">calculate_new_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>To test the performance of this module, I ran the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">255</span>
+<span class="n">conv</span> <span class="o">=</span> <span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">conv</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+<span class="o">%%</span><span class="n">time</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">out</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This module, as written, takes <strong>35.5 ms</strong> to execute on this input.</p>
+<p>Let’s now JIT this code (e.g. convert it to the graph runtime). To do so, I need only make a couple of changes. First, the class now needs to inherit from <code class="docutils literal notranslate"><span class="pre">jit.ScriptModule</span></code>, not <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
+<span class="k">class</span> <span class="nc">Conv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="c1"># [...]</span>
+<span class="c1"># new</span>
+<span class="k">class</span> <span class="nc">Conv2d</span><span class="p">(</span><span class="n">jit</span><span class="o">.</span><span class="n">ScriptModule</span><span class="p">):</span>
+    <span class="c1"># [...]</span>
+</pre></div>
+</div>
+<p>Second, I set the <code class="docutils literal notranslate"><span class="pre">&#64;jit.script_method</span></code> wrapper on the forward method definition within the module code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
+<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="c1"># [...]</span>
+
+<span class="nd">@jit</span><span class="o">.</span><span class="n">script_method</span>
+<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="c1"># [...]</span>
+</pre></div>
+</div>
+<p>You can see both versions of this code <a class="reference external" href="https://gist.github.com/ResidentMario/1a4f6473828048990e26d12d58d7a227">on GitHub</a>.</p>
+<p>You can, in theory, JIT the other helper functions (<code class="docutils literal notranslate"><span class="pre">calculate_windows</span></code>, <code class="docutils literal notranslate"><span class="pre">calculate_new_width</span></code>, <code class="docutils literal notranslate"><span class="pre">calculate_new_height</span></code>) as well, but these functions perform relatively simple math and are only called once, so I don’t think they significantly affect overall performance. The main line of code we’re trying to optimize is the core matrix multiply, <code class="docutils literal notranslate"><span class="pre">torch.matmul</span></code>, on line 40.</p>
+<p>I run the same exact test code on this new, JIT-ed version of <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">255</span>
+<span class="n">conv</span> <span class="o">=</span> <span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">conv</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+<span class="o">%%</span><span class="n">time</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">out</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Recall that the vanilla module took 35.5 ms to execute. The JIT version of this module executes in <strong>17.4 ms</strong>.</p>
+<p><strong>By just changing two lines of code, we’ve got a 2x speedup!</strong></p>
+<p>Need you any further convincing, yet more evidence of the kind of speedups that JIT enables is presented in <a class="reference external" href="https://pytorch.org/blog/optimizing-cuda-rnn-with-torchscript/">the blog post announcing the release of the JIT feature</a>. In that post, the PyTorch team implement a handwritten LSTM module, and benchmark the performance of this layer after a variety of JIT optimizations—operator fusion and loop unrolling being the two biggest effects:</p>
+<p><img alt="JIT performance techniques and their impact from the PyTorch blog" src="_images/jit-perf-torch-blog.avif" /></p>
+<p>In this case, we see order-of 3x improvement in module performance! Forward propagation in particular is as performant as it is in cuDNN (the CUDA framework you’d be using if you hated yourself and wanted to write raw CUDA code).</p>
+<p>How is this possible? Briefly, <strong>operator fusion</strong> combines compatible sequences of mathematical operations within the module definition into a single long-running operation, allowing the C++ process to operate on the tensor without having to create an intermediate state that, were we evaluating eagerly, would have to then be resurfaced to the Python process. <strong>Loop unrolling</strong> is an extremely common compiler optimization that turns for and while loops into numbered component blocks, which the execution engine can then trivially parallelize.</p>
+<p>Layers built into the PyTorch library (<code class="docutils literal notranslate"><span class="pre">torch.nn</span></code> and elsewhere) already use these optimizations and others like it everywhere they can. By using <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code>, you can extend these compiler optimizations to your custom modules as well!</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>In this post we saw, at a very high level, what <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> is and how it can be used to greatly improve the performance of your custom module code. We saw a benchmark application to a Conv2d layer showing an approximately 2x speedup and another benchmark application to an LSTM module showing an approximately 3x speedup.</p>
+<p>I should note that, though they are the focus of this blog post, high-performance custom modules are not the only thing that JIT allows.</p>
+<p>PyTorch JIT also has the major benefit that it creates a C++ computational graph consumable using <code class="docutils literal notranslate"><span class="pre">libtorch</span></code>, PyTorch’s C++ implementation. This provides portability. Mobile and embedded platforms are usually a poor choice for Python code; meanwhile, a C++ neural network module can be consumed from any programming language capable of linking to a C++ executable, which is pretty much all of them. To this effect, the PyTorch website has recipes for Android and iOS showing how this is done.</p>
+<p>However, I personally think that fast custom modules is the much more common use case. 90% of machine learning projects do not target embedded deployments. In either case, these are outside of the scope of this book!</p>
+<!--
+## To-do
+
+- Redo benchmarks.
+-->
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="gradient-checkpoints.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Gradient Checkpoints</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="pruning.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Model Pruning</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

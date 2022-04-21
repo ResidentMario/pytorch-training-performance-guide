@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantization &#8212; PyTorch Training Performance Guide</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">PyTorch Training Performance Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Home
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="lr-sched-and-optim.html">
+   LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gradient-checkpoints.html">
+   Gradient Checkpoints
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="jit.html">
+   JIT
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pruning.html">
+   Model Pruning
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="assorted-tricks.html">
+   Assorted Tricks
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/quantization.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-quantization-works">
+   How quantization works
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#quantization-in-practice">
+   Quantization in practice
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dynamic-quantization">
+   Dynamic quantization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#static-quantization">
+   Static quantization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#quantization-aware-training">
+   Quantization-aware training
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#benchmarks">
+   Benchmarks
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Quantization</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-quantization-works">
+   How quantization works
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#quantization-in-practice">
+   Quantization in practice
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dynamic-quantization">
+   Dynamic quantization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#static-quantization">
+   Static quantization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#quantization-aware-training">
+   Quantization-aware training
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#benchmarks">
+   Benchmarks
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="quantization">
+<h1>Quantization<a class="headerlink" href="#quantization" title="Permalink to this headline">¶</a></h1>
+<p>Quantization is a fairly recent technique for speeding up deep learning model inference time. This technique has become very popular very quickly because it has been shown to provide impressive improvements in model performance in both research and production settings. For example, in their article <a class="reference external" href="https://medium.com/roblox-tech-blog/how-we-scaled-bert-to-serve-1-billion-daily-requests-on-cpus-d99be090db26">How We Scaled Bert To Serve 1+ Billion Daily Requests on CPUs</a>, the Roblox engineering team discusses how they were able to leverage quantization to improve their throughput by a factor of 10x:</p>
+<p><img alt="Roblox model serving time improvements from their blog post" src="_images/roblox-serving-improvements.avif" /></p>
+<p>How does it work? Well, feeding an input to a deep learning model and getting a result back out boils down to a long sequence of vector math operations. Quantization works by simplifying the data type these operations use. In PyTorch, this means converting from default 32-bit floating point math (<code class="docutils literal notranslate"><span class="pre">fp32</span></code>) to 8-bit integer (<code class="docutils literal notranslate"><span class="pre">int8</span></code>) math. <code class="docutils literal notranslate"><span class="pre">int8</span></code> has a quarter as many bits as <code class="docutils literal notranslate"><span class="pre">fp32</span></code> has, so model inference performed in <code class="docutils literal notranslate"><span class="pre">int8</span></code> is (naively) four times as fast.</p>
+<p>This chapter in an introduction to the quantization techniques available in PyTorch. We will:</p>
+<ul class="simple">
+<li><p>Discuss the motivation for using quantization</p></li>
+<li><p>Introduce (and demonstrate) the three forms of quantization built into PyTorch</p></li>
+<li><p>Run some benchmarks to see how it performs.</p></li>
+</ul>
+<p>All of the model code is available on GitHub: <a class="reference external" href="https://github.com/spellml/tweet-sentiment-extraction/blob/master/servers/eval_quantized.py">here</a>, <a class="reference external" href="https://github.com/spellml/unet-bob-ross/blob/master/servers/eval_quantized.py">here</a>, and <a class="reference external" href="https://github.com/ResidentMario/mobilenet-cifar10/blob/master/servers/eval_quantized.py">here</a>.</p>
+<div class="section" id="how-quantization-works">
+<h2>How quantization works<a class="headerlink" href="#how-quantization-works" title="Permalink to this headline">¶</a></h2>
+<p>Before we can understand how mixed precision training works, we first need to review a little bit about numerical types.</p>
+<p>In computer engineering, decimal numbers like <code class="docutils literal notranslate"><span class="pre">1.0151</span></code> or <code class="docutils literal notranslate"><span class="pre">566132.8</span></code> are traditionally represented as floating point numbers. Since we can have infinitely precise numbers (think <code class="docutils literal notranslate"><span class="pre">π</span></code>), but limited space in which to store them, we have to make a compromise between precision (the number of decimals we can include in a number before we have to start rounding it) and size (how many bits we use to store the number).</p>
+<p>The technical standard for floating point numbers, IEEE 754 (for a deep dive I recommend the PyCon 2019 talk <a class="reference external" href="https://www.youtube.com/watch?v=zguLmgYWhM0">Floats are Friends: making the most of IEEE754.00000000000000002</a>), sets the following standards:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fp64</span></code>, aka double-precision or “double”. <code class="docutils literal notranslate"><span class="pre">float</span></code> in Python uses this type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fp32</span></code>, aka single-precision or “single”. PyTorch uses this type by default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fp16</span></code>, aka half-precision or “half”.</p></li>
+</ul>
+<p>Floating points need a specification because operating on and storing unbounded numbers is complicated. Integer numbers like <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">-12</span></code>, or <code class="docutils literal notranslate"><span class="pre">42</span></code>, are comparatively simple. An <code class="docutils literal notranslate"><span class="pre">int32</span></code>, for example, has 1 bit reserved for the sign, and 31 bits for the digits. That means it can store <code class="docutils literal notranslate"><span class="pre">2^31</span> <span class="pre">=</span> <span class="pre">4294967296</span></code> total values, ranging from <code class="docutils literal notranslate"><span class="pre">-2^31</span> <span class="pre">to</span> <span class="pre">2^31</span> <span class="pre">-</span> <span class="pre">1</span></code>. The same logic holds for an <code class="docutils literal notranslate"><span class="pre">int8</span></code>: this type holds <code class="docutils literal notranslate"><span class="pre">2^8</span> <span class="pre">=</span> <span class="pre">256</span></code> total values in the range <code class="docutils literal notranslate"><span class="pre">-2^7</span> <span class="pre">=</span> <span class="pre">-128</span></code> through <code class="docutils literal notranslate"><span class="pre">2^7</span> <span class="pre">-</span> <span class="pre">1</span> <span class="pre">=</span> <span class="pre">127</span></code>.</p>
+<p>Quantization works by mapping the (many) values possible in <code class="docutils literal notranslate"><span class="pre">fp32</span></code> onto the (just <code class="docutils literal notranslate"><span class="pre">256</span></code>) values possible in <code class="docutils literal notranslate"><span class="pre">int8</span></code>. This is done by binning the values: mapping ranges of values in the <code class="docutils literal notranslate"><span class="pre">fp32</span></code> space into individual int8 values. For example, two weights constants <code class="docutils literal notranslate"><span class="pre">1.2251</span></code> and <code class="docutils literal notranslate"><span class="pre">1.6125</span></code> in <code class="docutils literal notranslate"><span class="pre">fp32</span></code> might both be converted to <code class="docutils literal notranslate"><span class="pre">12</span></code> in <code class="docutils literal notranslate"><span class="pre">int8</span></code>, because they are both in the bin <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2]</span></code>. Picking the right bins is obviously very important.</p>
+<p><strong>PyTorch provides three different quantization algorithms, which differ primarily in where they determine these bins</strong>—“dynamic” quantization does so at runtime, “training-aware” quantization does so at train time, and “static” quantization does so as an additional intermediate step in between the two. Each of these approaches has advantages and disadvantages (which we will cover shortly). Note that there are other quantization techniques proposed in the academic literature as well.</p>
+<p>Once the values (weights, inputs, and intermediate vectors) have been converted into <code class="docutils literal notranslate"><span class="pre">int8</span></code> format, most of the math that follows is performed in <code class="docutils literal notranslate"><span class="pre">int8</span></code> (an exception is made for certain accumulation operations, e.g. <code class="docutils literal notranslate"><span class="pre">sum</span></code>, which accumulate error especially quickly). This type has 25% as many bits as the default type, resulting in the following desirable properties:</p>
+<ul class="simple">
+<li><p>Reduction in model size that asymptotically approaches 4x</p></li>
+<li><p>2-4x reduction in memory bandwidth</p></li>
+<li><p>2-4x faster inference due to savings in memory bandwidth and compute</p></li>
+</ul>
+</div>
+<div class="section" id="quantization-in-practice">
+<h2>Quantization in practice<a class="headerlink" href="#quantization-in-practice" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of caveats to this improved performance in practice.</p>
+<p><strong>Quantization is an inference-only technique</strong>. <code class="docutils literal notranslate"><span class="pre">int8</span></code> is not numerically accurate enough to support backpropagation. Such aggressive rounding—from fine-grained floating point values to integer approximations—introduces inaccuracy into the model. Training is much more sensitive to weight inaccuracy than serving; performing backpropagation in <code class="docutils literal notranslate"><span class="pre">int8</span></code> will almost assuredly cause the model to diverge. A similar but less invasive technique, mixed-precision training, is used instead.</p>
+<p><strong>Not all models are equally sensitive to quantization</strong>. Quantization is fundamentally an approximation technique, and hence always reduces model performance, but the extent of the regression is highly model-dependent. Performance regression in practice can range anywhere from &gt;10% to 0.1%, depending on model robustness, the choice of technique, and how much of the model you quantize. Here, “robustness” is usually analogous to “model size”: a large model with many redundant connections will typically perform better than a smaller one with just a few sparse connections.</p>
+<p><strong>Quantization need not be applied to the entire model</strong>. It is possible to run certain parts of the network in <code class="docutils literal notranslate"><span class="pre">int8</span></code>, but leave other parts in <code class="docutils literal notranslate"><span class="pre">fp32</span></code>. A relatively cheap conversion operation is inserted between the <code class="docutils literal notranslate"><span class="pre">int8</span></code> and <code class="docutils literal notranslate"><span class="pre">fp32</span></code> segments. This can be used to tune the performance of models that don’t respond well to one-shot quantization.</p>
+<p><strong>Not all layers can be quantized</strong>. Some layers accumulate error too quickly when quantized to be useful (e.g. accumulation operations). Others simply haven’t been implemented yet because the API is so new. There is no master list (that I’m aware of) of which operations have quantized implementations and which ones don’t, so discovering this is currently mostly a matter of trial and error, unfortunately.</p>
+<p><strong>Quantization in PyTorch is currently CPU-only</strong>. Quantization is not a CPU-specific technique (e.g. NVIDIA’s TensorRT can be used to implement quantization on GPU). However, inference time on GPU is already usually “fast enough”, and CPUs are more attractive for large-scale model server deployment (due to complex cost factors that are out of the scope of this article). Consequently, as of PyTorch 1.6, only CPU backends are available in the native API.</p>
+<p>In the sections that follow, we will introduce and review the techniques one at a time.</p>
+</div>
+<div class="section" id="dynamic-quantization">
+<h2>Dynamic quantization<a class="headerlink" href="#dynamic-quantization" title="Permalink to this headline">¶</a></h2>
+<p>Dynamic quantization is the easiest form of quantization to use. In fact it is so easy to use that here is the entire API expressed in a single code sample:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.quantization</span>
+
+<span class="n">quantized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="p">{</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In this code sample:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> is the PyTorch module targeted by the optimization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{torch.nn.Linear}</span></code> is the set of layer classes within the model we want to quantize.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dtype</span></code> is the quantized tensor type that will be used (you will want <code class="docutils literal notranslate"><span class="pre">qint8</span></code>).</p></li>
+</ul>
+<p>What makes dynamic quantization “dynamic” is the fact that it fine-tunes the quantization algorithm it uses at runtime. Recall that quantizing a fine-grained <code class="docutils literal notranslate"><span class="pre">fp32</span></code> vector requires choosing a set of <code class="docutils literal notranslate"><span class="pre">int8</span></code> bins and an algorithm for splitting those into those bins. Dynamic quantization simply multiplies input values by a scaling factor, then rounds the result to the nearest whole number and stores that.</p>
+<p>Model weights (which are known fixed ahead of time) are quantized immediately; activations are quantized using this dynamic algorithm at runtime, with small adjustments to the scaling factor made based on the input values observed, until the conversion operation is approximately optimal.</p>
+<p>This very simple on-the-fly approach doesn’t require making very many choices, which is what allows PyTorch to provide it in the form of a one-shot function wrapper API.</p>
+<p>Dynamic quantization is the least performant quantization technique in practice—e.g., it is the one that will have the most negative impact on your model performance. This is made up for by its simplicity: you can kind of chuck it at your model and see if it works. In practice, dynamic quantization performance is still more than adequate for large (typically server-side) NLP models where the memory bandwidth of the weights is the performance bottleneck: LSTMs, RNNs, and Transformer architectures.</p>
+</div>
+<div class="section" id="static-quantization">
+<h2>Static quantization<a class="headerlink" href="#static-quantization" title="Permalink to this headline">¶</a></h2>
+<p>Static quantization (also called post-training quantization) is the next quantization technique we’ll cover.</p>
+<p>Static quantization works by fine-tuning the quantization algorithm on a test dataset after initial model training is complete. This additional scoring process is not used to fine-tune the model—only to adjust the quantization algorithm parameters. This is much more involved than dynamic quantization, requiring an additional pass over the dataset to work, but it’s much more accurate: static quantization gives the algorithm the opportunity to calibrate using real data all at once, instead of having to do so one-at-a-time at run time.</p>
+<p>Static quantization requires changes to your model code. The module initialization code needs <code class="docutils literal notranslate"><span class="pre">torch.quantization.QuantStub</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.quantization.DeQuantStub</span></code> layers inserted into the model. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># QuantStub converts tensors from floating point to quantized</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quant</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">QuantStub</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="c1"># DeQuantStub converts tensors from quantized to floating point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dequant</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">DeQuantStub</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In this example, the quant layer will perform the <code class="docutils literal notranslate"><span class="pre">fp32</span> <span class="pre">-&gt;</span> <span class="pre">int8</span></code> conversion, <code class="docutils literal notranslate"><span class="pre">conv</span></code> and <code class="docutils literal notranslate"><span class="pre">relu</span></code> will run in <code class="docutils literal notranslate"><span class="pre">int8</span></code>, and then the dequant layer will <code class="docutils literal notranslate"><span class="pre">int8</span> <span class="pre">-&gt;</span> <span class="pre">fp32</span></code> convert the input value back for emission.</p>
+<p>In dynamic quantization, only layers belonging to the set of types we pass to the function are quantized—the API is opt-in. Static quantization, by contrast, automatically applies quantization to all layers that can be quantized. To opt out of quantization for a specific layer, you need to set its <code class="docutils literal notranslate"><span class="pre">qconfig</span></code> field to <code class="docutils literal notranslate"><span class="pre">None—e</span></code>.g. <code class="docutils literal notranslate"><span class="pre">model.conv_1_4.qconfig</span> <span class="pre">=</span> <span class="pre">None</span></code>. You will need to insert <code class="docutils literal notranslate"><span class="pre">QuantStub</span></code> and <code class="docutils literal notranslate"><span class="pre">DeQuantStub</span></code> layers yourself as needed, to control the model’s quantization boundaries to match.</p>
+<p>Another thing you have to be aware of when using static quantization is the backend. PyTorch uses one of two purpose-built reduced-precision tensor matrix math libraries: FBGEMM on <code class="docutils literal notranslate"><span class="pre">x86</span></code> (<a class="reference external" href="https://github.com/pytorch/FBGEMM">repo</a>), QNNPACK (<a class="reference external" href="https://github.com/pytorch/pytorch/tree/169541871a7a6663cc86c3ab68501a62a5d8c67c/aten/src/ATen/native/quantized/cpu/qnnpack">repo</a>) on ARM. These are designed to use the PyTorch tensor format, e.g. they do not need to convert input tensors to their own internal representation (slowing down processing).</p>
+<p>Since these libraries are architecture-dependent, <strong>static quantization must be performed on a machine with the same architecture as your deployment target</strong>. If you are using FBGEMM, you must perform the calibration pass on an <code class="docutils literal notranslate"><span class="pre">x86</span></code> CPU (usually not a problem); if you are using QNNPACK, calibration needs to happen on an <code class="docutils literal notranslate"><span class="pre">ARM</span></code> CPU (this is harder).</p>
+<p>Finally, to get the most performance out of static quantization, you need to also use module fusion. <strong>Module fusion</strong> is the technique of combining (“fusing”) sequences of high-level layers, e.g. <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> + <code class="docutils literal notranslate"><span class="pre">Batchnorm</span></code>, into a single combined layer. This improves performance by pushing the combined sequence of operations into the low-level library, allowing it to be computed in one shot, e.g. without having to surface an intermediate representation back to the PyTorch Python process. This speeds things up and leads to more accurate results, albeit at the cost of debuggability.</p>
+<p>Module fusion is performed using <code class="docutils literal notranslate"><span class="pre">torch.quantization.fuse_modules</span></code>, which takes named module layers as input:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">[[</span><span class="s1">&#39;conv&#39;</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>At the time of writing, module fusions is only supported for a handful of very common CNN layer combinations: <code class="docutils literal notranslate"><span class="pre">[Conv,</span> <span class="pre">Relu]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Conv,</span> <span class="pre">BatchNorm]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Conv,</span> <span class="pre">BatchNorm,</span> <span class="pre">Relu]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Linear,</span> <span class="pre">Relu]</span></code>. There are also some differences between which combinations of layers the two different backends support, so YMMV.</p>
+<p>Here’s a code sample, taken from the PyTorch docs, showing the full static quantization process:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model_fp32</span> <span class="o">=</span> <span class="n">M</span><span class="p">()</span>
+<span class="n">model_fp32</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model_fp32</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qconfig</span><span class="p">(</span><span class="s1">&#39;fbgemm&#39;</span><span class="p">)</span>
+<span class="n">model_fp32_fused</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span>
+    <span class="n">model_fp32</span><span class="p">,</span> <span class="p">[[</span><span class="s1">&#39;conv&#39;</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">]]</span>
+<span class="p">)</span>
+<span class="n">model_fp32_prepared</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">model_fp32_fused</span><span class="p">)</span>
+
+<span class="c1"># quantization algorithm calibration happens here</span>
+<span class="c1"># this example uses just a single sample, but obvious in prod you will</span>
+<span class="c1"># want to use some meaningful subset of your training or test set</span>
+<span class="c1"># instead.</span>
+<span class="n">input_fp32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">model_fp32_prepared</span><span class="p">(</span><span class="n">input_fp32</span><span class="p">)</span>
+
+<span class="n">model_int8</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model_fp32_prepared</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">model_int8</span><span class="p">(</span><span class="n">input_fp32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here’s a couple more things you need to keep in mind:</p>
+<ul class="simple">
+<li><p>Static quantization requires inserting <code class="docutils literal notranslate"><span class="pre">QuantStub</span></code> and <code class="docutils literal notranslate"><span class="pre">DeQuantStub</span></code> layers into the model module initialization code. When the model in question is a pretrained one from somewhere else, e.g. <code class="docutils literal notranslate"><span class="pre">huggingface</span></code>, this is non-trivial to do; <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> and <code class="docutils literal notranslate"><span class="pre">huggingface</span></code> are starting to release their own prequantized versions of their models for exactly this reason.</p></li>
+<li><p>Static quantization requires a calibration pass on a CPU device using the same (supported) instruction set as the deployment target.</p></li>
+</ul>
+<p>In practice, static quantization is the right technique for medium-to-large sized models making heavy use of convolutions. <a class="reference external" href="https://pytorch.org/blog/introduction-to-quantization-on-pytorch/#device-and-operator-support">PyTorch’s own best-effort benchmarks</a> use static quantization more than they do the other two techniques.</p>
+</div>
+<div class="section" id="quantization-aware-training">
+<h2>Quantization-aware training<a class="headerlink" href="#quantization-aware-training" title="Permalink to this headline">¶</a></h2>
+<p>The final, most accurate, but also most tedious quantization technique is <strong>quantization-aware training</strong> (QAT). QAT does away with the post-training calibration process static quantization uses by injecting it into the training process directly.</p>
+<p>QAT works by injecting <code class="docutils literal notranslate"><span class="pre">FakeQuantile</span></code> layers into the model, which simulates <code class="docutils literal notranslate"><span class="pre">int8</span></code> behavior in <code class="docutils literal notranslate"><span class="pre">fp32</span></code> at training time by scaling and rounding their inputs. This behavior, which occurs during both forward and backpropagation, makes the model optimizer itself aware of the quantization behavior.</p>
+<p>Injecting quantization into model optimization directly like this leads to the best performance, but it also requires (potentially significant, potentially very significant) model fine-tuning to ensure that the model continues to converge. It also slows down training time.</p>
+<p>Aside from that, the QAT API looks almost exactly like the static quantization API, with the exception that the methods are now prefixed or affixed <code class="docutils literal notranslate"><span class="pre">qat</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># not eval!</span>
+<span class="n">model_fp32</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">model_fp32</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qat_qconfig</span><span class="p">(</span><span class="s1">&#39;fbgemm&#39;</span><span class="p">)</span>
+<span class="n">model_fp32_fused</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span><span class="n">model_fp32</span><span class="p">,</span>
+    <span class="p">[[</span><span class="s1">&#39;conv&#39;</span><span class="p">,</span> <span class="s1">&#39;bn&#39;</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">]])</span>
+<span class="n">model_fp32_prepared</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">prepare_qat</span><span class="p">(</span><span class="n">model_fp32_fused</span><span class="p">)</span>
+
+<span class="c1"># calibration</span>
+<span class="n">training_loop</span><span class="p">(</span><span class="n">model_fp32_prepared</span><span class="p">)</span>
+
+<span class="n">model_fp32_prepared</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model_int8</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model_fp32_prepared</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since the API is almost exactly the same, we will omit further discussion of it here.</p>
+<p>The PyTorch team found that, in practice, QAT is only necessary when working with very heavily optimized convolutional models, e.g. MobileNet, which have very sparse weights. As such, QAT is potentially a useful technique for edge deployments, but should not be necessary for server-side deployments. To learn more, refer to their blog post <a class="reference external" href="https://pytorch.org/blog/introduction-to-quantization-on-pytorch/">Introduction to Quantization on PyTorch</a>.</p>
+</div>
+<div class="section" id="benchmarks">
+<h2>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h2>
+<p>To test the effect that model quantization has in practice, I ran each technique on an example model for which it is a good fit (links point to the model code—I recommend giving the code a quick skim):</p>
+<p>For dynamic quantization, <a class="reference external" href="https://github.com/spellml/tweet-sentiment-extraction/blob/master/servers/eval_quantized.py">a Twitter sentiment classifier with a BERT backbone</a>.
+For static quantization, <a class="reference external" href="https://github.com/spellml/unet-bob-ross/blob/master/servers/eval_quantized.py">a UNet semantic image classifier trained on Bob Ross images</a>.
+For quantization-aware training, <a class="reference external" href="https://github.com/ResidentMario/mobilenet-cifar10/blob/master/servers/eval_quantized.py">a MobileNet trained on CIFAR10</a>.</p>
+<p>In this section I present some benchmarks from some experiments I ran using these three models.</p>
+<p>To begin, I trained each model, then scored it on its training dataset. I ran scoring jobs on GPU, CPU without quantization, and CPU with quantization. GPU inference was carried out using an NVIDIA T4 instance (g4dn.xlarge) on AWS; CPU inference was carried out using a c5.4xlarge (a medium-sized CPU instance type). The jobs were executed using a <a class="reference external" href="https://spell.ml/docs/run_overview/">Spell run</a>, using commands like this one:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ spell run
+    --github-url https://github.com/spellml/mobilenet-cifar10.git <span class="se">\</span>
+    --machine-type cpu-big <span class="se">\</span>
+    --mount runs/480/checkpoints/model_10.pth:<span class="se">\</span>
+            /spell/checkpoints/model_10.pth python servers/eval.py
+</pre></div>
+</div>
+<p>Here are the results:</p>
+<p><img alt="Quant time benchmarks" src="_images/quant-time-benchmarks.avif" /></p>
+<p>Looking at these results, we can see that GPU inference still beats quantized CPU inference handedly. However, quantization goes a long way towards closing this performance gap, providing speedups of 30 to 50 percent.</p>
+<p>Next, let’s take a look at the effect that quantization has on model size by measuring its footprint on disk:</p>
+<p><img alt="Quant size benchmarks" src="_images/quant-size-benchmarks.avif" /></p>
+<p>The statically quantized and QAT models demonstrate the “approaching 75%” model size reduction I alluded to earlier in this article. Meanwhile, dynamic quantization does not affect the size of the model on disk—the model is still read from and saved to disk in fp32, so no savings there.</p>
+<p>As you can see, quantization is a powerful technique for reducing model inference time on CPUs—and hence, a key component to making model inference, both on CPU compute and on edge devices, computationally tractable. If you’re thinking of making use of quantization, some other techniques important to this space, like <a class="reference external" href="https://heartbeat.fritz.ai/research-guide-model-distillation-techniques-for-deep-learning-4a100801c0eb">model distillation</a> and <a class="reference external" href="https://pytorch.org/tutorials/intermediate/pruning_tutorial.html">pruning</a>, are also worth exploring.</p>
+<!--
+## To-do
+
+- Re-do the benchmarks
+- Has anything changed in this part of the API?
+-->
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Aleksey Bilogur<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>
