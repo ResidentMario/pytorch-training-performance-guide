@@ -50,7 +50,7 @@ Three, use loss scaling. Loss scaling means multiplying the output of the loss f
 
 Combining these three techniques in tandem allowed the authors to train a variety of networks to convergence in significantly expedited time. For benchmarks, [I recommend reading the paper](https://arxiv.org/pdf/1710.03740.pdf) — it’s only 9 pages long!
 
-# # How tensor cores work
+## How tensor cores work
 
 While mixed precision training saves memory everywhere (an `fp16` matrix is half the size of a `fp32` one), it doesn’t provide a model training speedup without special GPU support. There needs to be something on the chip that accelerates half-precision operations. In recent generations of NVIDIA GPUs, there is: tensor cores.
 
