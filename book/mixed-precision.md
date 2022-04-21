@@ -70,7 +70,7 @@ One other piece of the puzzle worth keeping in mind is firmware. Although all ve
 
 With that important background out of the way, we’re finally ready to dig into the new PyTorch `amp` API.
 
-Mixed precision training has technically been possible forever: run sections of your network in `fp16` manually and implement loss scaling yourself. The exciting thing in automatic mixed-precision training is the “automatic” part. There’s just a couple of new API primitives to learn: `torch.cuda.amp.GradScalar` and `torch.cuda.amp.autocast`. Enabling mixed precision training is as simple as slotting these into the right places in your training script!
+Mixed precision training has technically been possible forever: run sections of your network in `fp16` manually and implement loss scaling yourself. The exciting thing in automatic mixed-precision training is the "automatic" part. There’s just a couple of new API primitives to learn: `torch.cuda.amp.GradScalar` and `torch.cuda.amp.autocast`. Enabling mixed precision training is as simple as slotting these into the right places in your training script!
 
 To demonstrate, here’s an excerpt of the training loop for a network using mixed-precision training. `# NEW` marks spots where new code got added.
 

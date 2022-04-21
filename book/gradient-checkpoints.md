@@ -1,12 +1,12 @@
 # Gradient Checkpoints
 
-In the era of ever-growing deep learning model sizes, one of the chief difficulties of working with the cutting-edge is cramming it onto GPU—after all, you can't train a model you can't fit onto your device. There are a large variety of techniques for ameliorating this problem; for instance, two that we've previously discussed here are _distributed training_ (TODO: link to chapter) and _mixed-precision training_ (TODO: link to chapter).
-
-In this chapter, we're covering another technique: **gradient checkpointing**. In a nutshell, gradient checkpointing works by recomputing the intermediate values of a deep neural net (which would ordinarily be stored at forward time) at backward time. This trades compute—the time cost of recalculating these values twice—for memory—the bandwidth cost of storing these values ahead of time.
+In this chapter we will cover **gradient checkpointing**. In a nutshell, gradient checkpointing works by recomputing the intermediate values of a deep neural net (which would ordinarily be stored at forward time) at backward time. This enables training larger models and/or larger batch sizes by trading compute (the time cost of recalculating these values twice) for memory (the bandwidth cost of storing these values ahead of time).
 
 At the end of this article, we'll see an example benchmark showing how gradient checkpointing reduces the model's memory cost by 60% (at the cost of 25% greater training time).
 
 [To follow along in code, check out the GitHub repository.](https://github.com/spellml/tweet-sentiment-extraction/blob/master/notebooks/5-checkpointing.ipynb)
+
+**TLDR**: gradient checkpointing allows you to scale single-machine model training to larger models and/or batch sizes without resorting to more invasive techniques like distributed training. It's a good candidate for squeezing the last bit of computational juice out of your existing setup.
 
 ## How neural networks use memory
 
@@ -205,8 +205,10 @@ Of course, the primary reason you would want to use checkpoints is so that you c
 
 ![Checkpoint size results](/img/ch2/checkpoint-size-results.avif)
 
+<!--
 ## To-do
 
 - Query practitioners for more detailed information on the trade-off b/c the conclusion (and recommendation) is currently very weak.
 - Repro performance benchmarks.
 - Build our own size benchmarks.
+-->

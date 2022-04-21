@@ -6,7 +6,7 @@ Then the whole deep learning revolution thing happened, leading to a whirlwind o
 
 In this chapter, we will discuss the history of learning rate schedulers and optimizers, leading up to the two techniques best-known among practitioners today: `OneCycleLR` and the `Adam` optimizer. We will discuss the relative merits of these two techniques.
 
-**TLDR**: you can stick to `Adam` (or one of its derivatives) for the most part, but you should try `OneCycleLR` eventually.
+**TLDR**: you can stick to `Adam` (or one of its derivatives) during the development stage of the project, but you should try additionally incorporating `OneCycleLR` into your model as well eventually.
 
 ## ReduceLROnPlateau, the first LR scheduler
 
@@ -36,15 +36,11 @@ One, model performance. It's a better optimizer, full stop. Simply put, it train
 
 Two, `Adam` is almost parameter-free. `Adam` does have a learning rate hyperparameter, but the adaptive nature of the algorithm makes it quite robust—unless the default learning rate is off by an order of magnitude, changing it doesn't affect performance much.
 
-`Adam` is not the first adaptive optimizer—that honor goes to `adagrad`, published in 2011—but it was the first one robust enough and fast enough for general-purpose usage. Upon its release, `Adam` immediately overtook `SGD` plus `ReduceLROnPlateau` as the state of the art in most applications. We've seen improved variants (like `Adamw`) since then, but these have yet to displace vanilla Adam in general-purpose usage.
-
-Because `Adam` manages learning rates internally, it's incompatible with most learning rate schedulers. Anything more complicated than simple learning warmup and/or decay will cause the `adam` optimizer to "complete" with the learning rate scheduler when managing its internal LR, causing model convergence to worsen.
-
-This makes `Adam` fundamentally incompatible with the two techniques we'll cover in the next two sections of this post, cosine annealing and one-cycle learning, both learning rate schedulers that do tricky and interesting things to your learning rate.
+`Adam` is not the first adaptive optimizer—that honor goes to `Adagrad`, published in 2011—but it was the first one robust enough and fast enough for general-purpose usage. Upon its release, `Adam` immediately overtook `SGD` plus `ReduceLROnPlateau` as the state of the art in most applications. We've seen improved variants (like `Adamw`) since then, but these have yet to displace vanilla `Adam` in general-purpose usage.
 
 ## Cosine annealed warm restart
 
-The 2017 paper [SGDR: Stochastic Gradient Descent with Warm Restarts](https://arxiv.org/abs/1608.03983) popularized the idea of warm restarts. A learning rate scheduler that incorporates warm restarts occasionally re-raises the learning rate. A simple linear example showing how this is done:
+The next big step forward in this space was arguably the 2017 paper [SGDR: Stochastic Gradient Descent with Warm Restarts](https://arxiv.org/abs/1608.03983) popularized the idea of warm restarts. A learning rate scheduler that incorporates warm restarts occasionally re-raises the learning rate. A simple linear example showing how this is done:
 
 ![An annealled sawtooth learning rate.](img/ch1/lr-sawtooth.avif)
 
@@ -80,7 +76,7 @@ In their implementation, `fastai` tweaks this a little bit, again switching from
 
 ![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/ch1/fastai-one-cycle-behavior.avif)
 
-`fastai` recommends the one-cycle LR scheduler plus `SGD` over `Adam` because, subject to some tuning (getting the maximum learning rate correct is particularly important), it trains models with roughly equal or marginally worse performance in a fraction of the time. This is due to a phenomenon that Leslie Smith, the once-cycle paper author, refers to as superconvergence. For example, the paper shows the following behavior on CIFAR10:
+`fastai` recommendeded `OneCycleLR` plus vanilla `SGD` over `Adam` because, subject to some tuning (getting the maximum learning rate correct is particularly important), it trained models with roughly equal or marginally worse performance in a fraction of the time. This is due to a phenomenon that Leslie Smith, the once-cycle paper author, terms superconvergence. For example, the paper shows the following behavior on CIFAR10:
 
 ![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/ch1/one-cycle-cifar10-perf.avif)
 
@@ -90,15 +86,18 @@ The one-cycle learning rate scheduler was implemented in PyTorch in August 2019 
 
 ## The view from 2021
 
-Despite `fastai` advocacy, at present, most practitioners still use the `Adam` optimizer as their default.
+The first version of the `fastai` course to teach OneCycleLR did so pairing `OneCycleLR` with vanilla `SGD` (as it was presented and used in the paper). However, the current version of the course now uses `Adam` and `OneCycleLR` (specifically, `Adamw`) as its default.
 
-For example, if you browse recent starter kernels for Kaggle competitions, [like this one](https://www.kaggle.com/gogo827jz/jane-street-neural-network-starter), you'll see that the use of `Adam` predominates. As I explained above, in large part because `Adam` is pretty much parameter-free, it's much more robust to model changes than `OneCycleLR` is. This makes it much easier to develop with, as it's one fewer set of hyperparameters that you have to optimize. These benefits seem to have proven to be more important than the computational benefit of `OneCycleLR`, hyperconvergence, in practice.
+This choice, and change, is explained at length in their blog post [AdamW and Super-convergence is now the fastest way to train neural nets](https://www.fast.ai/2018/07/02/adam-weight-decay/). The TLDR is that it wasn't immediately clear that Adam performance was what it was made out to be in the academic literature of the time, and so the decision was made to cut it from the curriculum until further experimentation proved otherwise.
+
+Even so, the "naked" Adam optimizer is predominant amongst practitioners today. You can see this for yourself by browsing recent starter kernels for Kaggle competitions, [like this one](https://www.kaggle.com/gogo827jz/jane-street-neural-network-starter), where you'll see that the use of Adam predominates. Because `Adam` is pretty much parameter-free, it's much more robust to model changes than `OneCycleLR` is. This makes it much easier to develop with, as it's one fewer set of hyperparameters that you have to optimize.
 
 However, once you're in the later optimization stage of a medium-sized model training project, experimenting with moving off of `Adam` and onto `OneCycleLR` is well worth doing. Just imagine how much easier the lives of your data engineers will be if your model can achieve 98% of the performance in 25% of the time!
 
 Hyperconvergence is an extremely attractive property to have, if you can spend the time required to tune it.
 
+<!--
 ## To-do
 
-- Query practitioners for more detailed information on the trade-off b/c the conclusion (and recommendation) is currently very weak.
 - Peformance benchmarks.
+-->

@@ -12,6 +12,8 @@ This blog post is an introduction to the distributed training in pure PyTorch us
 
 [You can follow along in code by checking out the companion GitHub repo](https://github.com/spellrun/deeplab-voc-2012).
 
+**TLDR**: data-distributed training is the best way to train models too large to fit on disk on a single machine. However, the network synchronization required have a very real efficiency cost, so you should only turn to using this technique once you have exhausted your ability to scale your training instance vertically (e.g. you are already working with the largest GPU instance available to you).
+
 ## What is distributed training?
 
 Before we can dive into `DistributedDataParallel`, we first need to acquire some background knowledge about distributed training in general.
@@ -257,7 +259,9 @@ Note that this is still an active area of development. The PyTorch team landed a
 
 Something that I don’t think gets discussed often enough is the impact that distributed training has on developer productivity. Taking even a moderately-sized model from "this takes three hours to train" to "this takes one hour to train" greatly increases the volume of experiments you can perform on and with the model in a single day — a substantial improvement to your developer velocity.
 
+<!--
 ## To-do
 
 - Redo the benchmarks.
 - Has anything changed in this part of the API?
+-->

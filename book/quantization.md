@@ -209,7 +209,9 @@ The statically quantized and QAT models demonstrate the "approaching 75%" model 
 
 As you can see, quantization is a powerful technique for reducing model inference time on CPUs—and hence, a key component to making model inference, both on CPU compute and on edge devices, computationally tractable. If you're thinking of making use of quantization, some other techniques important to this space, like [model distillation](https://heartbeat.fritz.ai/research-guide-model-distillation-techniques-for-deep-learning-4a100801c0eb) and [pruning](https://pytorch.org/tutorials/intermediate/pruning_tutorial.html), are also worth exploring.
 
+<!--
 ## To-do
 
 - Re-do the benchmarks
 - Has anything changed in this part of the API?
+-->

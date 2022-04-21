@@ -5,7 +5,10 @@ chapters:
   - file: gradient-checkpoints
   - file: jit
   - file: pruning
-  - file: quantization
+  # NOTE(aleksey): although we have a full-length blog post draft covering quantization, because
+  # it's an inference-only technique it's not really in scope for this book, which purportedly
+  # only covers training techniques.
+  # - file: quantization
   - file: data-distributed-training
   - file: model-distributed-training
   - file: mixed-precision

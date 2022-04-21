@@ -2,9 +2,9 @@
 
 This chapter is an introduction to a new idea in deep learning model optimization: model pruning. **Model pruning** is the technique of reducing the size of a deep learning model by finding small weights in the model and setting them to zero. Model can substantially reduce model size, and may one day speed up model inference time as well.
 
-In this chapter, we will introduce model pruning conceptually: what it is, how it works, and some approaches to using it. We'll introduce the **lottery ticket hypothesis** and discuss why the influential paper behind it has led to a resurgence of interest in this topic. Finally, we'll test out model pruning ourselves in PyTorch, benchmarking it on a demo model that we've built.
+In this chapter, we will introduce model pruning conceptually: what it is, how it works, and some approaches to using it. We'll introduce the **lottery ticket hypothesis** and discuss why the influential paper behind it has led to a resurgence of interest in this topic. Finally, we'll test out model pruning ourselves in PyTorch, benchmarking it on a demo model that we've built ([GH repo](https://github.com/ResidentMario/resnext50-panda)).
 
-[You can follow along in code on GitHub.](https://github.com/ResidentMario/resnext50-panda)
+**TLDR**: although model pruning currently provides significant savings in model artifact size, it does not currently have any effect on model training times due to limitations in PyTorch sparse tensor support. However this will almost certainly change in the future&mdash;watch this space!
 
 ## The basic idea
 
@@ -45,7 +45,7 @@ For a more in-depth summary of the technique and adjacent research, I recommend 
 
 ## Practical difficulty
 
-Unfortunately, model pruning in PyTorch does not currently improve model inference times.
+**Unfortunately, model pruning in PyTorch does not currently improve model inference times.**
 
 This unfortunate fact stems from the fact that model pruning does not improve inference performance or reduce model size if it is used with dense tensors. A dense tensor filled with zeroes is not any faster to compute, nor is it any smaller when written to disk. In order for that to happen, it needs to be converted to a sparse tensor.
 

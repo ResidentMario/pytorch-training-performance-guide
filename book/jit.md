@@ -6,7 +6,7 @@ If you've ever implemented a SOTA or near-SOTA neural network model, you're very
 
 But it doesn't have to be that way. In this blog post, we'll provide an overview of `torch.jit`: what it is, and at a high level, how it works. We'll then look at some code samples that show how easy it is to use this API in practice, and some benchmarks showing how.
 
-**TLDR: torch.jit can be used to enable 2x-3x speedups on custom module code.** Keep reading to learn how!
+**TLDR**: `torch.jit` can be used to enable 2x-3x speedups on custom module code.
 
 ## Eager versus graph execution
 
@@ -278,8 +278,10 @@ I should note that, though they are the focus of this blog post, high-performanc
 
 PyTorch JIT also has the major benefit that it creates a C++ computational graph consumable using `libtorch`, PyTorch's C++ implementation. This provides portability. Mobile and embedded platforms are usually a poor choice for Python code; meanwhile, a C++ neural network module can be consumed from any programming language capable of linking to a C++ executable, which is pretty much all of them. To this effect, the PyTorch website has recipes for Android and iOS showing how this is done.
 
-However, I personally think that fast custom modules is the much more common use case. 90% of machine learning projects do not target embedded deployments, and even for those that do, I think there are other model compilation tools on the market—[Apache TVM](https://tvm.apache.org/), in particular, is a standout—that do a better job for such deployment targets. However, these other tools are outside of the scope of this book.
+However, I personally think that fast custom modules is the much more common use case. 90% of machine learning projects do not target embedded deployments. In either case, these are outside of the scope of this book!
 
+<!--
 ## To-do
 
 - Redo benchmarks.
+-->

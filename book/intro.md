@@ -2,6 +2,8 @@
 
 The **PyTorch Training Performance Guide** is a simple book with a simple objective: documenting commonly used techniques for training [PyTorch](https://pytorch.org/) models to convergence quickly and effectively.
 
+Note that this book is currently in **beta**.
+
 ## Why you should read this book
 
 Most deep learning projects start out by training a model to convergence on data specific to your task, then using that model to drive predictions on future data. The more difficult the task, the larger the model needed to perform it, and the longer it takes to train. Many deep learning models used in production systems today have training times measured in days. This has multiple adverse effects:
@@ -19,9 +21,11 @@ This book attempts to serve as a simple introduction to the world of "architectu
 
 The intended audience for this book are intermediate and advanced deep learning practitioners using PyTorch. This book assumes familiarity with the basics of model training using PyTorch.
 
-Note that this book only covers techniques provided in the core PyTorch SDK. There are many other valuable tools in the surrounding ecosystem not covered here, but PyTorch core is a good place to start.
+Note that the scope of this book is purposefully limited in the following ways:
 
-Additionally note that this book will not cover any "architecture-specific" ideas. The techniques we cover here are applicable to almost any model.
+- We only cover techniques provided in the core PyTorch SDK. While there are many interesting external tools like [Horovod](https://horovod.ai/) and [Apache TVM](https://tvm.apache.org/), the tools built into PyTorch itself are a good place to start.
+- We only cover "architecture-specific" ideas. The techniques we cover here are applicable to almost any model.
+- We only cover training, not inference. Model inference optimization is a separate, albeit equally interesting topic. Perhaps a future edition of this book will cover this space also.
 
 All of the code for this book is open source! To submit issues or open pull requests, [visit the GitHub repository](https://github.com/ResidentMario/pytorch-training-performance-guide).
 
