@@ -1,20 +1,10 @@
 # Mixed Precision
 
-**TLDR**: the `torch.cuda.amp` mixed-precision training module forthcoming in PyTorch 1.6 delivers on its promise, delivering speed-ups of 50-60% in large model training jobs with just a handful of new lines of code.
-
-One of the most exciting additions expected to land in PyTorch 1.6, coming soon, is support for automatic mixed-precision training.
-
 **Mixed-precision training** is a technique for substantially reducing neural net training time by performing as many operations as possible in half-precision floating point, `fp16`, instead of the (PyTorch default) single-precision floating point, `fp32`. Recent generations of NVIDIA GPUs come loaded with special-purpose tensor cores specially designed for fast `fp16` matrix operations.
 
-However, up until now these tensor cores have remained difficult to use, as it has required writing reduced precision operations into your model by hand. This is where the automatic in automatic mixed-precision training comes in. The `torch.cuda.amp` API allows you to implement mixed precision training into your training scripts in just five lines of code!
+PyTorch 1.6 added API support for mixed-precision training, including automatic mixed-precision training. Using these cores had once required writing reduced precision operations into your model by hand. Today the `torch.cuda.amp` API can be used to implement automatic mixed precision training and reap the huge speedups it provides in as few as five lines of code!
 
-This post is a developer-friendly introduction to mixed precision training. We will:
-
-- Take a deep dive into mixed-precision training as a technique.
-- Introduce tensor cores: what they are and how they work.
-- Introduce the new PyTorch `amp` API.
-- Benchmark three different networks trained using `amp`.
-- Discuss which network archetypes will benefit the most from `amp`.
+**TLDR**: the `torch.cuda.amp` mixed-precision training module provides speed-ups of 50-60% in large model training jobs.
 
 ## How mixed precision works
 
@@ -203,4 +193,4 @@ Here is the impact that enabling mixed precision training has on the PyTorch mem
 
 Interestingly enough, while both of the larger models saw benefit from the swap to mixed precision, UNet benefited from the swap a lot more than BERT did. PyTorch memory allocation behavior is pretty opaque to me, so I have no insight into why this might be the case.
 
-To learn more about mixed precision training directly from the source, see the [automatic mixed precision package](https://pytorch.org/docs/master/amp.html) and [automatic mixed precision examples](https://pytorch.org/docs/master/notes/amp_examples.html) pages in the PyTorch master docs.
+To learn more about mixed precision training directly from the source, see the [automatic mixed precision package](https://pytorch.org/docs/master/amp.html) and [automatic mixed precision examples](https://pytorch.org/docs/master/notes/amp_examples.html) pages in the PyTorch docs.
