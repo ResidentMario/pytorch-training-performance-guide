@@ -24,7 +24,7 @@ To learn more about PyTorch `autograd`, check out [PyTorch autograd explained](h
 
 Large models are expensive in both the static and dynamic dimensions. They are hard to fit onto the GPU in the first place and hard to train once you get them onto the device because they force a batch size that's too small to converge.
 
-Various techniques exist to ameliorate one or both of these problems. Gradient checkpointing is one such technique; distributed training, _which we'd previously covered here_ (TODO: link to chapter), is another.
+Various techniques exist to ameliorate one or both of these problems. Gradient checkpointing is one of them.
 
 Gradient checkpointing works by omitting some of the activation values from the computational graph. This reduces the memory used by the computational graph, reducing memory pressure overall (and allowing larger batch sizes in the process).
 

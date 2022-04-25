@@ -24,4 +24,17 @@ To make changes to the book locally, edit the Markdown files, then run `jupyter-
 
 ## Publishing
 
-The publication process is still a TODO.
+This book is published using GitHub Pages. Instructions:
+
+```bash
+$ git checkout gh-pages
+$ rm -rf *
+$ git checkout master -- book/ .gitignore .nojekyll
+$ jupyter-book build book --all
+$ mv book/_build/html/* ./
+$ rm -rf book/
+$ git add .
+$ git commit -m "Publishing updated book..."
+$ git push origin gh-pages
+$ git checkout master
+```

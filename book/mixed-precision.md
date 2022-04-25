@@ -1,6 +1,6 @@
 # Mixed Precision
 
-TLDR: the `torch.cuda.amp` mixed-precision training module forthcoming in PyTorch 1.6 delivers on its promise, delivering speed-ups of 50-60% in large model training jobs with just a handful of new lines of code.
+**TLDR**: the `torch.cuda.amp` mixed-precision training module forthcoming in PyTorch 1.6 delivers on its promise, delivering speed-ups of 50-60% in large model training jobs with just a handful of new lines of code.
 
 One of the most exciting additions expected to land in PyTorch 1.6, coming soon, is support for automatic mixed-precision training.
 

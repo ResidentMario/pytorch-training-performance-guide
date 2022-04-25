@@ -24,8 +24,9 @@ The intended audience for this book are intermediate and advanced deep learning 
 Note that the scope of this book is purposefully limited in the following ways:
 
 - We only cover techniques provided in the core PyTorch SDK. While there are many interesting external tools like [Horovod](https://horovod.ai/) and [Apache TVM](https://tvm.apache.org/), the tools built into PyTorch itself are a good place to start.
-- We only cover "architecture-specific" ideas. The techniques we cover here are applicable to almost any model.
+- We only cover "architecture-independent" ideas. The techniques we cover here should be applicable to almost any model.
 - We only cover training, not inference. Model inference optimization is a separate, albeit equally interesting topic. Perhaps a future edition of this book will cover this space also.
+- We only cover PyTorch. Many of the same tools and techniques exist in TensorFlow, but (1) I am much less familiar with TensorFlow and (2) it is very difficult to write a technical reference covering two different SDKs at the same time.
 
 All of the code for this book is open source! To submit issues or open pull requests, [visit the GitHub repository](https://github.com/ResidentMario/pytorch-training-performance-guide).
 
@@ -37,6 +38,6 @@ All of the code for this book is open source! To submit issues or open pull requ
 
 ## Acknowledgements
 
-This book is based on a sequence of blog posts I wrote for our [blog](https://spell.ml/) while working for Spell. We are a model ops company that specializes and making training and deploying deep learning models on the cloud as simple and easy as possible.
+This book is based on a sequence of blog posts I wrote for the [blog](https://spell.ml/) while working for Spell. We are a model ops company that specializes and making training and deploying deep learning models on the cloud as simple and easy as possible.
 
-I was inspired to collect and edit these disparate posts into a single book by the blog post [Faster Deep Learning Training with PyTorch – a 2021 Guide](https://efficientdl.com/faster-deep-learning-in-pytorch-a-guide/), by Lorenz Kuhn. This led to [one of the most popular r/MachineLearning posts of all time](https://www.reddit.com/r/MachineLearning/comments/kvs1ex/d_here_are_17_ways_of_making_pytorch_training/).
+I was inspired to collect and edit these disparate posts, plus some new material, into a single book by the blog post [Faster Deep Learning Training with PyTorch – a 2021 Guide](https://efficientdl.com/faster-deep-learning-in-pytorch-a-guide/), by Lorenz Kuhn. This blog post was the subject of [one of the most popular r/MachineLearning posts of all time](https://www.reddit.com/r/MachineLearning/comments/kvs1ex/d_here_are_17_ways_of_making_pytorch_training/).
