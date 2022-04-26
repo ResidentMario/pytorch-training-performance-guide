@@ -16,7 +16,7 @@ Paging is the act of storing and retrieving memory pages from disk (HDD or SSD) 
 
 Pinned memory is used to speed up a CPU to GPU memory copy operation (as executed by `tensor.cuda()` in PyTorch) by guaranteeing that all of the data is in RAM, not spilled to permanent storage. Memory cached to disk has to first be read into RAM before it can be transferred to the GPU, resulting in a disk seek and a double copy, which slows the operation down. The following diagram, taken from this blog post, illustrates:
 
-![Pinned memory](/img/ch9/pinned-memory.avif)
+![Pinned memory](/img/assorted-tricks/pinned-memory.avif)
 
 PyTorch supports pinning batch data using the `pin_memory` field (`pin_memory=True`) on `DataLoader`. This feature is documented [here](https://pytorch.org/docs/stable/data.html#memory-pinning) in the PyTorch docs.
 
@@ -45,7 +45,7 @@ Data loading via worker processes is trivially easy to do when the root dataset 
 
 What are the performance benefits of using multiple workers? The [PyTorch Performance Tuning Guide talk](https://www.youtube.com/watch?v=9mS1fIYj1So) shows the following benchmarks on [a trivial MNIST example](https://github.com/pytorch/examples/blob/master/mnist/main.py) (with and without memory pinning, discussed in the previous section):
 
-![Num workers optimization](/img/ch9/num-workers.avif)
+![Num workers optimization](/img/assorted-tricks/num-workers.avif)
 
 ## Use non-blocking device memory transfers
 
@@ -61,7 +61,7 @@ You can speed up script execution by using placing some other tensor-independent
 
 This optimization is particularly important when using pinned memory (if you are not familiar with this concept, refer to the first section of this page for details). Low-level CUDA optimizations [explained here on the NVIDIA blog](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/) allow certain types of data transfers onto the GPU device **from pinned memory only** to execute concurrently with GPU kernel processes. Here is a visualization from that blog post that summarizes how it works:
 
-![Async GPU loading](/img/ch9/async-gpu-loading.avif)
+![Async GPU loading](/img/assorted-tricks/async-gpu-loading.avif)
 
 In the first (sequential) example, data loading blocks kernel execution and vice versa. In the latter two (concurrent) examples, the load and execute tasks are first broken down into smaller subtasks, then pipelined in a [just-in-time](https://en.wikipedia.org/wiki/Just-in-time_compilation) manner.
 
@@ -126,7 +126,7 @@ You can enable benchmarking by setting `torch.backends.cudnn.benchmark = True`. 
 
 Again drawing from the [PyTorch Performance Tuning Guide](https://www.youtube.com/watch?v=9mS1fIYj1So) talk, we can see the magnitude of the benefit:
 
-![cuDNN benchmarking](/img/ch9/cudnn-benchmarking.avif)
+![cuDNN benchmarking](/img/assorted-tricks/cudnn-benchmarking.avif)
 
 Keep in mind that using `cudNN` benchmarking will only result in a speed if you keep the input size (the shape of the batch tensor you pass to `model(batch)`) fixed. Otherwise, benchmarking will fire every time input size changes. Deep learning models almost universially use a fixed tensor shape and batch size, so this shouldn't usually be a concern.
 
@@ -170,7 +170,7 @@ Gradient clipping is the technique, originally developed for handling [exploding
 
 The paper [Why Gradient Clipping Accelerates Training: A Theoretical Justification for Adaptivity](https://iclr.cc/virtual_2020/poster_BJgnXpVYwS.html) shows (and provides some theoretical justification for why) gradient clipping can improve convergence behavior, potentially allowing you to choose a higher learning rate (and hence converge to an optimized model more quickly):
 
-![Gradient clipping encouraging conversion](/img/ch9/gradient-clipping-convergence.avif)
+![Gradient clipping encouraging conversion](/img/assorted-tricks/gradient-clipping-convergence.avif)
 
 Gradient clipping in PyTorch is provided via `torch.nn.utils.clip_grad_norm_`. You can apply it to individual parameter groups on a case-by-case basis, but the easiest and most common way to use it is to apply the clip to the model as a whole:
 

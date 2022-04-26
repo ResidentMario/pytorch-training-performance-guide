@@ -26,7 +26,7 @@ This chapter will cover data-distributed training only. A future chapter covers 
 
 As far as I can tell, the first data parallelization technique to see adoption in deep learning was the **parameter server strategy** in TensorFlow. This technique predates TensorFlow itself: it was actually first implemented in its Google-internal predecessor, DistBelief, in 2012. This strategy is illustrated in the following diagram (taken from [here](https://eng.uber.com/horovod/)):
 
-![Parameter server strategy](/img/ch6/parameter-server-strategy.avif)
+![Parameter server strategy](/img/data-distributed-training/parameter-server-strategy.avif)
 
 In the parameter server strategy there is a variable number of worker and parameter processes, with each worker process maintaining its own independent copy of the model in GPU memory. Gradient updates are computed as follows:
 
@@ -44,7 +44,7 @@ The 2017 Baidu paper [Bringing HPC Techniques to Deep Learning](https://web.arch
 
 In this strategy, every process is a worker process. Each process still maintains a complete in-memory copy of the model weights, but batch slice gradients updates are now synchronized and averaged directly on the worker processes themselves. This is achieved using a technique borrowed from the high-performance computing world: an **all-reduce algorithm**:
 
-![All-reduce diagram](/img/ch6/all-reduce.avif)
+![All-reduce diagram](/img/data-distributed-training/all-reduce.avif)
 
 This diagram shows one particular implementation of an all-reduce algorithm, ring all-reduce, in action. The algorithm provides an elegant way of synchronizing the state of a set of tensors among a collection of processes. The tensors are passed in a ring (hence the name) by a sequence of direct worker-to-woker connections. This eliminates the network bottleneck created by the worker-to-parameter-server connections, substantially improving performance.
 
@@ -237,7 +237,7 @@ The results are not definitive by any means, but should nevertheless give you so
 
 _Author note: these benchmarks were last run in June 2020. Improvements in the DistributedDataParallel implementation have likely further reduced runtimes since then._
 
-![Benchmarks](/img/ch6/benchmarks.avif)
+![Benchmarks](/img/data-distributed-training/benchmarks.avif)
 
 As you can clearly see, `DistributedDataParallel` is noticeably more efficient than `DataParallel`, but still far from perfect. Switching from a V100x1 to a V100x4 is a 4x multiplier on raw GPU power but only 3x on model training speed. Doubling the compute further by moving up to a V100x8 only produces a ~30% improvement in training speed. By that point `DataParallel` almost catches up to `DistributedDataParallel` in (in)efficiency.
 

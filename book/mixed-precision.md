@@ -28,7 +28,7 @@ Notice that the smaller the floating point, the larger the rounding errors it in
 
 The 2018 ICLR paper [Mixed Precision Training](https://arxiv.org/pdf/1710.03740.pdf) found that naively using `fp16` everywhere "swallows" gradient updates smaller than `2^-24` in value — around 5% of all gradient updates made by their example network:
 
-![Weight gradients](/img/ch8/weight-gradients.avif)
+![Weight gradients](/img/mixed-precision/weight-gradients.avif)
 
 **Mixed precision training** is a set of techniques which allows you to use `fp16` without causing your model training to diverge. It’s a combination of three different techniques.
 
@@ -46,7 +46,7 @@ While mixed precision training saves memory everywhere (an `fp16` matrix is half
 
 **Tensor cores** are a new type of processing unit that’s optimized for a single very specific operation: multiplying two `4 x 4` `fp16` matrices together and adding the result to a third `4 x 4` `fp16` or `fp32` matrix (a "fused multiply add").
 
-![Weight gradients](/img/ch8/fused-multiply-add.avif)
+![Weight gradients](/img/mixed-precision/fused-multiply-add.avif)
 
 Larger `fp16` matrix multiplication operations can be implemented using this operation as their basic building block. And since most of backpropagation boils down to matrix multiplication, tensor cores are applicable to almost any computationally intensive layer in the network.
 
@@ -131,15 +131,15 @@ Finally, note that `GradScalar` is a stateful object. Checkpointing a model usin
 
 The other half of the automatic mixed-precision training puzzle is the `torch.cuda.amp.autocast` context manager. Autocast implements `fp32 -> fp16` behavior. Recall from "How mixed precision works" that, because different operations accumulate errors at different rates, not all operations are safe to run in fp16. The following screenshots taken from [the amp module documentation](https://pytorch.org/docs/master/amp.html#autocast-op-reference) covers how autocast treats the various operations available in PyTorch:
 
-![Autocast float16 ops](/img/ch8/autocast-float16-ops.avif)
+![Autocast float16 ops](/img/mixed-precision/autocast-float16-ops.avif)
 
 This list predominantly consists of two things, matrix multiplication and convolutions. The simple `linear` function is also present.
 
-![Autocast promo ops](/img/ch8/autocast-promo-ops.avif)
+![Autocast promo ops](/img/mixed-precision/autocast-promo-ops.avif)
 
 These operations are safe in `fp16`, but have up-casting rules to ensure that they don’t break when given a mixture of `fp16` and `fp32` input. Note that this list includes two other fundamental linear algebraic operations: matrix/vector dot products and vector cross products.
 
-![Autocast float32 ops](/img/ch8/autocast-float32-ops.avif)
+![Autocast float32 ops](/img/mixed-precision/autocast-float32-ops.avif)
 
 Logarithms, exponents, trigonometric functions, normal functions, discrete functions, and (large) sums are unsafe in `fp16` and must be performed in `fp32`.
 
@@ -171,7 +171,7 @@ The results:
 
 _Author note: these benchmarks were last run in June 2020. Improvements in the implementation have likely reduced training times even further since then._
 
-![Timing benchmarks](/img/ch8/timing-benchmarks.avif)
+![Timing benchmarks](/img/mixed-precision/timing-benchmarks.avif)
 
 Because the feedforward network is very small, it gets no benefit from mixed precision training.
 
@@ -193,7 +193,7 @@ Here is the impact that enabling mixed precision training has on the PyTorch mem
 
 _Author note: these benchmarks were last run in June 2020._
 
-![Memory benchmarks](/img/ch8/memory-benchmarks.avif)
+![Memory benchmarks](/img/mixed-precision/memory-benchmarks.avif)
 
 Interestingly enough, while both of the larger models saw benefit from the swap to mixed precision, UNet benefited from the swap a lot more than BERT did. PyTorch memory allocation behavior is pretty opaque to me, so I have no insight into why this might be the case.
 

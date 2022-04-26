@@ -18,7 +18,7 @@ In the early stages of model training, the model is still making large steps tow
 
 In the late stages of model training, the opposite is true. The model has approximately the right gradients already; it just needs a little extra push to find the last few percentage points of performance. A large gradient is no longer appropriate because it will "overshoot" the point of optimality. Instead of converging on the global cost minima, the model will bounce around it:
 
-![An unstable learner that is missing the true local minima.](img/ch1/unstable-learner.avif)
+![An unstable learner that is missing the true local minima.](img/lr-sched-and-optim/unstable-learner.avif)
 
 This observation led to the popularization of the first well-known learning rate scheduler, `ReduceLROnPlateau` (`torch.optim.lr_scheduler.ReduceLROnPlateau` in PyTorch). `ReduceLROnPlateau` takes a `step_size`, a `patience`, and a `cooldown` as input. After completing each batch of training, the model checks whether or not model performance has improved. If model performance hasn't improved in `patience` batches, the learning rate is reduced (typically by a factor of 10). After a cooldown period, this process is repeated again, until the final batch of training completes.
 
@@ -42,17 +42,17 @@ Two, `Adam` is almost parameter-free. `Adam` does have a learning rate hyperpara
 
 The next big step forward in this space was arguably the 2017 paper [SGDR: Stochastic Gradient Descent with Warm Restarts](https://arxiv.org/abs/1608.03983) popularized the idea of warm restarts. A learning rate scheduler that incorporates warm restarts occasionally re-raises the learning rate. A simple linear example showing how this is done:
 
-![An annealled sawtooth learning rate.](img/ch1/lr-sawtooth.avif)
+![An annealled sawtooth learning rate.](img/lr-sched-and-optim/lr-sawtooth.avif)
 
 Warm restarts usually actually cause the model to diverge. This is done on purpose. It turns out that adding some controlled divergence allows the model to work around local minima in the task's cost surface, allowing it to find an even better global minima instead. This is akin to finding a valley, then climbing a nearby hill, and discovering an even deeper valley one region over. Here's a visual summary:
 
-![Two learners moves around a cost surface.](img/ch1/cost-surface-discovery.avif)
+![Two learners moves around a cost surface.](img/lr-sched-and-optim/cost-surface-discovery.avif)
 
 Both of these learners converge to the same global minima. However, on the left, the learner trundles slowly along a low-gradient path. On the right, the learner falls into a sequence of local minima (valleys), then uses warm restarts to climb over them (hills). In the process it finds the same global minima faster, because the path it follows has a much higher gradient overall.
 
 [fast.ai](https://www.fast.ai/) popularized a learning rate scheduler that uses both warm restarts and cosine annealing. This scheduler has the following shape:
 
-![Two learners moves around a cost surface.](img/ch1/cosine-annealing.avif)
+![Two learners moves around a cost surface.](img/lr-sched-and-optim/cosine-annealing.avif)
 
 Cosine annealing has better convergence behavior than linear annealing, for reasons that are not entirely understood.
 
@@ -64,7 +64,7 @@ This learning rate scheduler was the default one used by the `fastai` framework 
 
 The one-cycle learning rate scheduler was introduced in the 2017 paper [Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates](https://arxiv.org/abs/1708.07120). The paper uses the following learning rate policy (which is applied over both learning rate and momentum):
 
-![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/ch1/one-cycle-paper-figure.avif)
+![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/lr-sched-and-optim/one-cycle-paper-figure.avif)
 
 Optimally, learning rate and momentum should be set to a value which just causes the network to begin to diverge at its peak. The remainder of the training regimen consists of warm-up, cool-down, and fine-tuning periods. Note that, during the fine-tuning period, the learning rate drops to 1/10th of its initial value.
 
@@ -74,11 +74,11 @@ The one-cycle learning rate scheduler uses more or less the same mechanism that 
 
 In their implementation, `fastai` tweaks this a little bit, again switching from linear to cosine annealing:
 
-![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/ch1/fastai-one-cycle-behavior.avif)
+![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/lr-sched-and-optim/fastai-one-cycle-behavior.avif)
 
 `fastai` recommendeded `OneCycleLR` plus vanilla `SGD` over `Adam` because, subject to some tuning (getting the maximum learning rate correct is particularly important), it trained models with roughly equal or marginally worse performance in a fraction of the time. This is due to a phenomenon that Leslie Smith, the once-cycle paper author, terms superconvergence. For example, the paper shows the following behavior on CIFAR10:
 
-![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/ch1/one-cycle-cifar10-perf.avif)
+![A figure from the one-cycle paper illustrating the one-cycle LR scheduler pattern.](img/lr-sched-and-optim/one-cycle-cifar10-perf.avif)
 
 Though you shouldn't count on results this compelling in practice, superconvergence has indeed been demonstrated on a broad range of datasets and problem domains.
 

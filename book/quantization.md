@@ -2,7 +2,7 @@
 
 Quantization is a fairly recent technique for speeding up deep learning model inference time. This technique has become very popular very quickly because it has been shown to provide impressive improvements in model performance in both research and production settings. For example, in their article [How We Scaled Bert To Serve 1+ Billion Daily Requests on CPUs](https://medium.com/roblox-tech-blog/how-we-scaled-bert-to-serve-1-billion-daily-requests-on-cpus-d99be090db26), the Roblox engineering team discusses how they were able to leverage quantization to improve their throughput by a factor of 10x:
 
-![Roblox model serving time improvements from their blog post](/img/ch5/roblox-serving-improvements.avif)
+![Roblox model serving time improvements from their blog post](/img/quantization/roblox-serving-improvements.avif)
 
 How does it work? Well, feeding an input to a deep learning model and getting a result back out boils down to a long sequence of vector math operations. Quantization works by simplifying the data type these operations use. In PyTorch, this means converting from default 32-bit floating point math (`fp32`) to 8-bit integer (`int8`) math. `int8` has a quarter as many bits as `fp32` has, so model inference performed in `int8` is (naively) four times as fast.
 
@@ -197,13 +197,13 @@ $ spell run
 
 Here are the results:
 
-![Quant time benchmarks](/img/ch5/quant-time-benchmarks.avif)
+![Quant time benchmarks](/img/quantization/quant-time-benchmarks.avif)
 
 Looking at these results, we can see that GPU inference still beats quantized CPU inference handedly. However, quantization goes a long way towards closing this performance gap, providing speedups of 30 to 50 percent.
 
 Next, let's take a look at the effect that quantization has on model size by measuring its footprint on disk:
 
-![Quant size benchmarks](/img/ch5/quant-size-benchmarks.avif)
+![Quant size benchmarks](/img/quantization/quant-size-benchmarks.avif)
 
 The statically quantized and QAT models demonstrate the "approaching 75%" model size reduction I alluded to earlier in this article. Meanwhile, dynamic quantization does not affect the size of the model on disk—the model is still read from and saved to disk in fp32, so no savings there.
 

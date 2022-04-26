@@ -262,7 +262,7 @@ Recall that the vanilla module took 35.5 ms to execute. The JIT version of this 
 
 Need you any further convincing, yet more evidence of the kind of speedups that JIT enables is presented in [the blog post announcing the release of the JIT feature](https://pytorch.org/blog/optimizing-cuda-rnn-with-torchscript/). In that post, the PyTorch team implement a handwritten LSTM module, and benchmark the performance of this layer after a variety of JIT optimizations—operator fusion and loop unrolling being the two biggest effects:
 
-![JIT performance techniques and their impact from the PyTorch blog](/img/ch3/jit-perf-torch-blog.avif)
+![JIT performance techniques and their impact from the PyTorch blog](/img/jit/jit-perf-torch-blog.avif)
 
 In this case, we see order-of 3x improvement in module performance! Forward propagation in particular is as performant as it is in cuDNN (the CUDA framework you'd be using if you hated yourself and wanted to write raw CUDA code).
 
