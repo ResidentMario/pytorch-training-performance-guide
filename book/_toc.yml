@@ -1,6 +1,7 @@
 format: jb-book
 root: intro
 chapters:
+  - file: quickstart
   - file: lr-sched-and-optim
   - file: mixed-precision
   - file: data-distributed-training
