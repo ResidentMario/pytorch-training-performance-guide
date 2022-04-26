@@ -169,6 +169,8 @@ I trained three very different neural networks once with automatic mixed precisi
 
 The results:
 
+_Author note: these benchmarks were last run in June 2020. Improvements in the implementation have likely reduced training times even further since then._
+
 ![Timing benchmarks](/img/ch8/timing-benchmarks.avif)
 
 Because the feedforward network is very small, it gets no benefit from mixed precision training.
@@ -188,6 +190,8 @@ As I explained in the section "How mixed precision works", an `fp16` matrix is h
 PyTorch reserves a certain amount of GPU memory at the beginning of the model training process and holds onto that memory for the duration of the training job. This keeps other processes from reserving too much GPU memory mid-training, forcing the PyTorch training script to crash with an OOM error.
 
 Here is the impact that enabling mixed precision training has on the PyTorch memory reservation behavior:
+
+_Author note: these benchmarks were last run in June 2020._
 
 ![Memory benchmarks](/img/ch8/memory-benchmarks.avif)
 

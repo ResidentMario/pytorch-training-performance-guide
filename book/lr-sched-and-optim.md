@@ -84,9 +84,9 @@ Though you shouldn't count on results this compelling in practice, superconverge
 
 The one-cycle learning rate scheduler was implemented in PyTorch in August 2019 (as `torch.optim.lr_scheduler.OneCycleLR`; here's the [GH PR](https://github.com/pytorch/pytorch/pull/21258)).
 
-## The view from 2021
+## The view from today
 
-The first version of the `fastai` course to teach OneCycleLR did so pairing `OneCycleLR` with vanilla `SGD` (as it was presented and used in the paper). However, the current version of the course now uses `Adam` and `OneCycleLR` (specifically, `Adamw`) as its default.
+The first version of the `fastai` course to teach `OneCycleLR` did so pairing `OneCycleLR` with vanilla `SGD` (as it was presented and used in the paper). However, the current version of the course now uses `Adam` and `OneCycleLR` (specifically, `Adamw`) as its default.
 
 This choice, and change, is explained at length in their blog post [AdamW and Super-convergence is now the fastest way to train neural nets](https://www.fast.ai/2018/07/02/adam-weight-decay/). The TLDR is that it wasn't immediately clear that Adam performance was what it was made out to be in the academic literature of the time, and so the decision was made to cut it from the curriculum until further experimentation proved otherwise.
 

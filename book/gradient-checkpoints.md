@@ -195,6 +195,8 @@ self.bert = transformers.BertModel.from_pretrained(
 
 I used [Spell](https://spell.ml/) to train this model four times: once each on an NVIDIA T4 and NVIDIA V100 GPU, and once each in checkpointed and uncheckpointed modes. All runs had a batch size of 64. Here are the results:
 
+_Author note: these benchmarks were last run in April 2021._
+
 ![Checkpoint runtime results](/img/ch2/checkpoint-runtime-results.avif)
 
 The first row has training runs conducted with model checkpointing off, the second with it on.
