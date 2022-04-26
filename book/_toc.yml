@@ -2,6 +2,9 @@ format: jb-book
 root: intro
 chapters:
   - file: lr-sched-and-optim
+  - file: mixed-precision
+  - file: data-distributed-training
+  - file: model-distributed-training
   - file: gradient-checkpoints
   - file: jit
   - file: pruning
@@ -9,7 +12,4 @@ chapters:
   # it's an inference-only technique it's not really in scope for this book, which purportedly
   # only covers training techniques.
   # - file: quantization
-  - file: data-distributed-training
-  - file: model-distributed-training
-  - file: mixed-precision
   - file: assorted-tricks
