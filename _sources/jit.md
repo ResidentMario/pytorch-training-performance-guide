@@ -20,7 +20,7 @@ Alternatively, one may make use of **graph execution**. Graph execution pushes t
 
 Graph execution is faster than eager execution: the computational graph need only be built once, and the compiler can automatically find and apply optimizations to the code that aren't possible in an interpreted context (compare the performance of Python with C, for example). However, this comes at the cost of developer experience. All of the interesting state is now managed by a C++ kernel. Debugging with `pdb` is no longer possible (you'll need to attach `gdb` to the C++ process—not only is this a lot more work, but it also requires knowing a second programming language). Error messages are now bubbled-up C++ error messages, which tend to be opaque and hard to connect to their Python source.
 
-When PyTorch got its start back in 2016, it wasn't immediately obvious which execution mode was better. By time of writing, January 2021, eager execution has emerged as the clear winner. PyTorch's rapid growth in market share at the expense of TensorFlow is largely credited to its ease-of-use, which in turn is largely credited to its use of the eager execution model. TensorFlow, which used graph execution by default in version 1, switched to using eager execution by default in TensorFlow 2.
+When PyTorch got its start back in 2016, it wasn't immediately obvious which execution mode was better. Today eager execution has emerged as the clear winner. PyTorch's rapid growth in market share at the expense of TensorFlow is largely credited to its ease-of-use, which in turn is largely credited to its use of the eager execution model. TensorFlow, which used graph execution by default in version 1, switched to using eager execution by default in TensorFlow 2.
 
 That being said, graph execution still has its uses. In production settings, any gain in performance can produce significant reductions in the overall cost of running a model. And the pure C++ computational graphs graph execution produces are much more portable than Python computational graph. This is particularly important on embedded and mobile platforms, which offer only extremely limited Python support.
 
@@ -262,7 +262,7 @@ Recall that the vanilla module took 35.5 ms to execute. The JIT version of this 
 
 Need you any further convincing, yet more evidence of the kind of speedups that JIT enables is presented in [the blog post announcing the release of the JIT feature](https://pytorch.org/blog/optimizing-cuda-rnn-with-torchscript/). In that post, the PyTorch team implement a handwritten LSTM module, and benchmark the performance of this layer after a variety of JIT optimizations—operator fusion and loop unrolling being the two biggest effects:
 
-![JIT performance techniques and their impact from the PyTorch blog](/img/ch3/jit-perf-torch-blog.avif)
+![JIT performance techniques and their impact from the PyTorch blog](/img/jit/jit-perf-torch-blog.avif)
 
 In this case, we see order-of 3x improvement in module performance! Forward propagation in particular is as performant as it is in cuDNN (the CUDA framework you'd be using if you hated yourself and wanted to write raw CUDA code).
 
@@ -272,13 +272,13 @@ Layers built into the PyTorch library (`torch.nn` and elsewhere) already use the
 
 ## Conclusion
 
-In this post we saw, at a very high level, what `torch.jit` is and how it can be used to greatly improve the performance of your custom module code. We saw a benchmark application to a Conv2d layer showing an approximately 2x speedup and another benchmark application to an LSTM module showing an approximately 3x speedup.
+In this post we saw, at a very high level, what `torch.jit` is and how it can be used to greatly improve the performance of your custom module code. We saw a benchmark application to a `Conv2d` layer showing an approximately 2x speedup and another benchmark application to an LSTM module showing an approximately 3x speedup.
 
 I should note that, though they are the focus of this blog post, high-performance custom modules are not the only thing that JIT allows.
 
 PyTorch JIT also has the major benefit that it creates a C++ computational graph consumable using `libtorch`, PyTorch's C++ implementation. This provides portability. Mobile and embedded platforms are usually a poor choice for Python code; meanwhile, a C++ neural network module can be consumed from any programming language capable of linking to a C++ executable, which is pretty much all of them. To this effect, the PyTorch website has recipes for Android and iOS showing how this is done.
 
-However, I personally think that fast custom modules is the much more common use case. 90% of machine learning projects do not target embedded deployments. In either case, these are outside of the scope of this book!
+However, this application is outside of the scope of this book!
 
 <!--
 ## To-do

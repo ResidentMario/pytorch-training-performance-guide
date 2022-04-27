@@ -50,8 +50,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Gradient Checkpoints" href="gradient-checkpoints.html" />
-    <link rel="prev" title="Home" href="intro.html" />
+    <link rel="next" title="Mixed Precision" href="mixed-precision.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -96,9 +96,29 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="quickstart.html">
+   Quickstart
+  </a>
+ </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
   </a>
  </li>
  <li class="toctree-l1">
@@ -114,21 +134,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="pruning.html">
    Model Pruning
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="data-distributed-training.html">
-   Data-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="model-distributed-training.html">
-   Model-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="mixed-precision.html">
-   Mixed Precision
   </a>
  </li>
  <li class="toctree-l1">
@@ -228,8 +233,8 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#the-view-from-2021">
-   The view from 2021
+  <a class="reference internal nav-link" href="#the-view-from-today">
+   The view from today
   </a>
  </li>
 </ul>
@@ -273,8 +278,8 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#the-view-from-2021">
-   The view from 2021
+  <a class="reference internal nav-link" href="#the-view-from-today">
+   The view from today
   </a>
  </li>
 </ul>
@@ -338,9 +343,9 @@ const thebe_selector_output = ".output, .cell_output"
 <p>Though you shouldn’t count on results this compelling in practice, superconvergence has indeed been demonstrated on a broad range of datasets and problem domains.</p>
 <p>The one-cycle learning rate scheduler was implemented in PyTorch in August 2019 (as <code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.OneCycleLR</span></code>; here’s the <a class="reference external" href="https://github.com/pytorch/pytorch/pull/21258">GH PR</a>).</p>
 </div>
-<div class="section" id="the-view-from-2021">
-<h2>The view from 2021<a class="headerlink" href="#the-view-from-2021" title="Permalink to this headline">¶</a></h2>
-<p>The first version of the <code class="docutils literal notranslate"><span class="pre">fastai</span></code> course to teach OneCycleLR did so pairing <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> with vanilla <code class="docutils literal notranslate"><span class="pre">SGD</span></code> (as it was presented and used in the paper). However, the current version of the course now uses <code class="docutils literal notranslate"><span class="pre">Adam</span></code> and <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> (specifically, <code class="docutils literal notranslate"><span class="pre">Adamw</span></code>) as its default.</p>
+<div class="section" id="the-view-from-today">
+<h2>The view from today<a class="headerlink" href="#the-view-from-today" title="Permalink to this headline">¶</a></h2>
+<p>The first version of the <code class="docutils literal notranslate"><span class="pre">fastai</span></code> course to teach <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> did so pairing <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> with vanilla <code class="docutils literal notranslate"><span class="pre">SGD</span></code> (as it was presented and used in the paper). However, the current version of the course now uses <code class="docutils literal notranslate"><span class="pre">Adam</span></code> and <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> (specifically, <code class="docutils literal notranslate"><span class="pre">Adamw</span></code>) as its default.</p>
 <p>This choice, and change, is explained at length in their blog post <a class="reference external" href="https://www.fast.ai/2018/07/02/adam-weight-decay/">AdamW and Super-convergence is now the fastest way to train neural nets</a>. The TLDR is that it wasn’t immediately clear that Adam performance was what it was made out to be in the academic literature of the time, and so the decision was made to cut it from the curriculum until further experimentation proved otherwise.</p>
 <p>Even so, the “naked” Adam optimizer is predominant amongst practitioners today. You can see this for yourself by browsing recent starter kernels for Kaggle competitions, <a class="reference external" href="https://www.kaggle.com/gogo827jz/jane-street-neural-network-starter">like this one</a>, where you’ll see that the use of Adam predominates. Because <code class="docutils literal notranslate"><span class="pre">Adam</span></code> is pretty much parameter-free, it’s much more robust to model changes than <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> is. This makes it much easier to develop with, as it’s one fewer set of hyperparameters that you have to optimize.</p>
 <p>However, once you’re in the later optimization stage of a medium-sized model training project, experimenting with moving off of <code class="docutils literal notranslate"><span class="pre">Adam</span></code> and onto <code class="docutils literal notranslate"><span class="pre">OneCycleLR</span></code> is well worth doing. Just imagine how much easier the lives of your data engineers will be if your model can achieve 98% of the performance in 25% of the time!</p>
@@ -378,17 +383,17 @@ const thebe_selector_output = ".output, .cell_output"
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="intro.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="quickstart.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Home</p>
+            <p class="prev-next-title">Quickstart</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="gradient-checkpoints.html" title="next page">
+    <a class='right-next' id="next-link" href="mixed-precision.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Gradient Checkpoints</p>
+        <p class="prev-next-title">Mixed Precision</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

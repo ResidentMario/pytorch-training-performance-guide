@@ -10,7 +10,7 @@ In this chapter, we will introduce model pruning conceptually: what it is, how i
 
 The basic idea behind model pruning is simple. Deep learning models which have been trained to convergence typically have a large number of weights very close to zero contributing very little weight to model inference. For example, the 2018 ICLR paper [Mixed Precision Training](https://arxiv.org/abs/1710.03740) includes the following graphic showing weight values in a typical deep neural network (note that "Becomes zero in FP16" is unrelated):
 
-![Weight gradients](/img/ch4/weight-gradients.avif)
+![Weight gradients](/img/pruning/weight-gradients.avif)
 
 The smaller the weight, the more likely it is that it can be taken to zero without significantly affecting model performance. This same basic idea informed the development of [ReLU activation](https://machinelearningmastery.com/rectified-linear-activation-function-for-deep-learning-neural-networks/).
 
@@ -153,7 +153,7 @@ You don't need to worry about how this works under the hood unless you go about 
 
 To evaluate the performance implications of using this pruning strategy, I pruned progressively larger percentages of the weights in the model, in steps of 5%, and evaluated the impact doing so had on the mean batch loss of the test set. Here were the results:
 
-![A pruning curve, showing the impact on model accuracy of progressively more aggressive unstructured model pruning.](/img/ch4/pruning-curve.avif)
+![A pruning curve, showing the impact on model accuracy of progressively more aggressive unstructured model pruning.](/img/pruning/pruning-curve.avif)
 
 In this plot, 1 is the baseline (unpruned) model performance, and the other numbers are multiple of that baseline. So at `0.7`, 70% sparsity, our loss is 3 times as high as it is for our baseline unpruned model.
 
@@ -174,7 +174,7 @@ def prune_model_l1_structured(model, layer_type, proportion):
 
 This code sample implements L1 structured pruning on the output channels dimensions: e.g. it removes proportion lowest-scoring channels (filters) from the `Conv2d` layer. Plotting the performance implications of L1 structured pruning, we get the following:
 
-![Another pruning curve, showing the impact on model accuracy of progressively more aggressive structured model pruning.](/img/ch4/structured-pruning-curve.avif)
+![Another pruning curve, showing the impact on model accuracy of progressively more aggressive structured model pruning.](/img/pruning/structured-pruning-curve.avif)
 
 As you can see, structured pruning has much less fidelity than unstructured pruning. With our current implementation, we can only safely prune 5 to 10 percent of the model weights before performance begins to degrade. It appears that most of the filters in our model are doing something useful, and so we cannot remove them nearly as easily as we can individual weights.
 
@@ -202,7 +202,7 @@ def prune_model_global_unstructured(model, layer_type, proportion):
 
 The result:
 
-![Another pruning curve, yada yada.](/img/ch4/global-unstructured-pruning-curve.avif)
+![Another pruning curve, yada yada.](/img/pruning/global-unstructured-pruning-curve.avif)
 
 Taking a look at model performance we see that, remarkably, one-shot global unstructured pruning allows us to achieve 80 percent sparsity before model performance begins to degrade!
 

@@ -50,8 +50,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Assorted Tricks" href="assorted-tricks.html" />
-    <link rel="prev" title="Model-Distributed Training" href="model-distributed-training.html" />
+    <link rel="next" title="Data-Distributed Training" href="data-distributed-training.html" />
+    <link rel="prev" title="LR Schedulers, Adaptive Optimizers" href="lr-sched-and-optim.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -97,8 +97,28 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <ul class="current nav bd-sidenav">
  <li class="toctree-l1">
+  <a class="reference internal" href="quickstart.html">
+   Quickstart
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="lr-sched-and-optim.html">
    LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
   </a>
  </li>
  <li class="toctree-l1">
@@ -114,21 +134,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="pruning.html">
    Model Pruning
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="data-distributed-training.html">
-   Data-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="model-distributed-training.html">
-   Model-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   Mixed Precision
   </a>
  </li>
  <li class="toctree-l1">
@@ -288,18 +293,9 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="mixed-precision">
 <h1>Mixed Precision<a class="headerlink" href="#mixed-precision" title="Permalink to this headline">¶</a></h1>
-<p>TLDR: the <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp</span></code> mixed-precision training module forthcoming in PyTorch 1.6 delivers on its promise, delivering speed-ups of 50-60% in large model training jobs with just a handful of new lines of code.</p>
-<p>One of the most exciting additions expected to land in PyTorch 1.6, coming soon, is support for automatic mixed-precision training.</p>
 <p><strong>Mixed-precision training</strong> is a technique for substantially reducing neural net training time by performing as many operations as possible in half-precision floating point, <code class="docutils literal notranslate"><span class="pre">fp16</span></code>, instead of the (PyTorch default) single-precision floating point, <code class="docutils literal notranslate"><span class="pre">fp32</span></code>. Recent generations of NVIDIA GPUs come loaded with special-purpose tensor cores specially designed for fast <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix operations.</p>
-<p>However, up until now these tensor cores have remained difficult to use, as it has required writing reduced precision operations into your model by hand. This is where the automatic in automatic mixed-precision training comes in. The <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp</span></code> API allows you to implement mixed precision training into your training scripts in just five lines of code!</p>
-<p>This post is a developer-friendly introduction to mixed precision training. We will:</p>
-<ul class="simple">
-<li><p>Take a deep dive into mixed-precision training as a technique.</p></li>
-<li><p>Introduce tensor cores: what they are and how they work.</p></li>
-<li><p>Introduce the new PyTorch <code class="docutils literal notranslate"><span class="pre">amp</span></code> API.</p></li>
-<li><p>Benchmark three different networks trained using <code class="docutils literal notranslate"><span class="pre">amp</span></code>.</p></li>
-<li><p>Discuss which network archetypes will benefit the most from <code class="docutils literal notranslate"><span class="pre">amp</span></code>.</p></li>
-</ul>
+<p>PyTorch 1.6 added API support for mixed-precision training, including automatic mixed-precision training. Using these cores had once required writing reduced precision operations into your model by hand. Today the <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp</span></code> API can be used to implement automatic mixed precision training and reap the huge speedups it provides in as few as five lines of code!</p>
+<p><strong>TLDR</strong>: the <code class="docutils literal notranslate"><span class="pre">torch.cuda.amp</span></code> mixed-precision training module provides speed-ups of 50-60% in large model training jobs.</p>
 <div class="section" id="how-mixed-precision-works">
 <h2>How mixed precision works<a class="headerlink" href="#how-mixed-precision-works" title="Permalink to this headline">¶</a></h2>
 <p>Before we can understand how mixed precision training works, we first need to review a little bit about floating point numbers.</p>
@@ -420,6 +416,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li><p><code class="docutils literal notranslate"><span class="pre">BERT</span></code>, a large NLP transformer model using the <code class="docutils literal notranslate"><span class="pre">bert-base-uncased</span></code> model backbone (via <code class="docutils literal notranslate"><span class="pre">huggingface</span></code>) and data from the <a class="reference external" href="https://www.kaggle.com/c/tweet-sentiment-extraction">Twitter Sentiment Extraction</a> competition on Kaggle. <a class="reference external" href="https://github.com/ResidentMario/spell-tweet-sentiment-extraction">Get the code here</a>.</p></li>
 </ul>
 <p>The results:</p>
+<p><em>Author note: these benchmarks were last run in June 2020. Improvements in the implementation have likely reduced training times even further since then.</em></p>
 <p><img alt="Timing benchmarks" src="_images/timing-benchmarks.avif" /></p>
 <p>Because the feedforward network is very small, it gets no benefit from mixed precision training.</p>
 <p>UNet, a medium-sized convolutional model with 7,703,497 total parameters, sees significant benefits from enabling mixed precision training. Interestingly, though the V100 and T4 both benefit from mixed precision training, the benefit to the T4 is much greater: a 5% time save versus a whopping 30% time save.</p>
@@ -432,9 +429,10 @@ const thebe_selector_output = ".output, .cell_output"
 <p>As I explained in the section “How mixed precision works”, an <code class="docutils literal notranslate"><span class="pre">fp16</span></code> matrix is half the size of a <code class="docutils literal notranslate"><span class="pre">fp32</span></code> matrix in memory, so another purported advantage of mixed precision training is memory usage. GPU memory is much less of a bottleneck than GPU compute, but it’s still pretty valuable to optimize. The more efficient your memory usage, the larger the batch sizes you can fit on the GPU.</p>
 <p>PyTorch reserves a certain amount of GPU memory at the beginning of the model training process and holds onto that memory for the duration of the training job. This keeps other processes from reserving too much GPU memory mid-training, forcing the PyTorch training script to crash with an OOM error.</p>
 <p>Here is the impact that enabling mixed precision training has on the PyTorch memory reservation behavior:</p>
+<p><em>Author note: these benchmarks were last run in June 2020.</em></p>
 <p><img alt="Memory benchmarks" src="_images/memory-benchmarks.avif" /></p>
 <p>Interestingly enough, while both of the larger models saw benefit from the swap to mixed precision, UNet benefited from the swap a lot more than BERT did. PyTorch memory allocation behavior is pretty opaque to me, so I have no insight into why this might be the case.</p>
-<p>To learn more about mixed precision training directly from the source, see the <a class="reference external" href="https://pytorch.org/docs/master/amp.html">automatic mixed precision package</a> and <a class="reference external" href="https://pytorch.org/docs/master/notes/amp_examples.html">automatic mixed precision examples</a> pages in the PyTorch master docs.</p>
+<p>To learn more about mixed precision training directly from the source, see the <a class="reference external" href="https://pytorch.org/docs/master/amp.html">automatic mixed precision package</a> and <a class="reference external" href="https://pytorch.org/docs/master/notes/amp_examples.html">automatic mixed precision examples</a> pages in the PyTorch docs.</p>
 </div>
 </div>
 
@@ -463,17 +461,17 @@ const thebe_selector_output = ".output, .cell_output"
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="model-distributed-training.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="lr-sched-and-optim.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Model-Distributed Training</p>
+            <p class="prev-next-title">LR Schedulers, Adaptive Optimizers</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="assorted-tricks.html" title="next page">
+    <a class='right-next' id="next-link" href="data-distributed-training.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Assorted Tricks</p>
+        <p class="prev-next-title">Data-Distributed Training</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

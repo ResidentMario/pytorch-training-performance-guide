@@ -24,7 +24,7 @@ To learn more about PyTorch `autograd`, check out [PyTorch autograd explained](h
 
 Large models are expensive in both the static and dynamic dimensions. They are hard to fit onto the GPU in the first place and hard to train once you get them onto the device because they force a batch size that's too small to converge.
 
-Various techniques exist to ameliorate one or both of these problems. Gradient checkpointing is one such technique; distributed training, _which we'd previously covered here_ (TODO: link to chapter), is another.
+Various techniques exist to ameliorate one or both of these problems. Gradient checkpointing is one of them.
 
 Gradient checkpointing works by omitting some of the activation values from the computational graph. This reduces the memory used by the computational graph, reducing memory pressure overall (and allowing larger batch sizes in the process).
 
@@ -195,7 +195,9 @@ self.bert = transformers.BertModel.from_pretrained(
 
 I used [Spell](https://spell.ml/) to train this model four times: once each on an NVIDIA T4 and NVIDIA V100 GPU, and once each in checkpointed and uncheckpointed modes. All runs had a batch size of 64. Here are the results:
 
-![Checkpoint runtime results](/img/ch2/checkpoint-runtime-results.avif)
+_Author note: these benchmarks were last run in April 2021._
+
+![Checkpoint runtime results](/img/gradient-checkpoints/checkpoint-runtime-results.avif)
 
 The first row has training runs conducted with model checkpointing off, the second with it on.
 
@@ -203,7 +205,7 @@ The first row has training runs conducted with model checkpointing off, the seco
 
 Of course, the primary reason you would want to use checkpoints is so that you can get batch sizes onto GPU that are too large to fit straight up. In the blog post [Explore Gradient-Checkpointing in PyTorch](https://qywu.github.io/2019/05/22/explore-gradient-checkpointing.html), Qingyang Wu demonstrates this by going from 24 to an amazing 132 samples per batch!
 
-![Checkpoint size results](/img/ch2/checkpoint-size-results.avif)
+![Checkpoint size results](/img/gradient-checkpoints/checkpoint-size-results.avif)
 
 <!--
 ## To-do

@@ -50,7 +50,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="LR Schedulers, Adaptive Optimizers" href="lr-sched-and-optim.html" />
+    <link rel="next" title="Quickstart" href="quickstart.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -96,8 +96,28 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
+  <a class="reference internal" href="quickstart.html">
+   Quickstart
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="lr-sched-and-optim.html">
    LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
   </a>
  </li>
  <li class="toctree-l1">
@@ -113,21 +133,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="pruning.html">
    Model Pruning
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="data-distributed-training.html">
-   Data-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="model-distributed-training.html">
-   Model-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="mixed-precision.html">
-   Mixed Precision
   </a>
  </li>
  <li class="toctree-l1">
@@ -297,8 +302,9 @@ const thebe_selector_output = ".output, .cell_output"
 <p>Note that the scope of this book is purposefully limited in the following ways:</p>
 <ul class="simple">
 <li><p>We only cover techniques provided in the core PyTorch SDK. While there are many interesting external tools like <a class="reference external" href="https://horovod.ai/">Horovod</a> and <a class="reference external" href="https://tvm.apache.org/">Apache TVM</a>, the tools built into PyTorch itself are a good place to start.</p></li>
-<li><p>We only cover “architecture-specific” ideas. The techniques we cover here are applicable to almost any model.</p></li>
+<li><p>We only cover “architecture-independent” ideas. The techniques we cover here should be applicable to almost any model.</p></li>
 <li><p>We only cover training, not inference. Model inference optimization is a separate, albeit equally interesting topic. Perhaps a future edition of this book will cover this space also.</p></li>
+<li><p>We only cover PyTorch. Many of the same tools and techniques exist in TensorFlow, but (1) I am much less familiar with TensorFlow and (2) it is very difficult to write a technical reference covering two different SDKs at the same time.</p></li>
 </ul>
 <p>All of the code for this book is open source! To submit issues or open pull requests, <a class="reference external" href="https://github.com/ResidentMario/pytorch-training-performance-guide">visit the GitHub repository</a>.</p>
 </div>
@@ -306,21 +312,22 @@ const thebe_selector_output = ".output, .cell_output"
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lr-sched-and-optim.html">LR Schedulers, Adaptive Optimizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixed-precision.html">Mixed Precision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data-distributed-training.html">Data-Distributed Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model-distributed-training.html">Model-Distributed Training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gradient-checkpoints.html">Gradient Checkpoints</a></li>
 <li class="toctree-l1"><a class="reference internal" href="jit.html">JIT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pruning.html">Model Pruning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data-distributed-training.html">Data-Distributed Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model-distributed-training.html">Model-Distributed Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mixed-precision.html">Mixed Precision</a></li>
 <li class="toctree-l1"><a class="reference internal" href="assorted-tricks.html">Assorted Tricks</a></li>
 </ul>
 </div>
 </div>
 <div class="section" id="acknowledgements">
 <h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
-<p>This book is based on a sequence of blog posts I wrote for our <a class="reference external" href="https://spell.ml/">blog</a> while working for Spell. We are a model ops company that specializes and making training and deploying deep learning models on the cloud as simple and easy as possible.</p>
-<p>I was inspired to collect and edit these disparate posts into a single book by the blog post <a class="reference external" href="https://efficientdl.com/faster-deep-learning-in-pytorch-a-guide/">Faster Deep Learning Training with PyTorch – a 2021 Guide</a>, by Lorenz Kuhn. This led to <a class="reference external" href="https://www.reddit.com/r/MachineLearning/comments/kvs1ex/d_here_are_17_ways_of_making_pytorch_training/">one of the most popular r/MachineLearning posts of all time</a>.</p>
+<p>This book is based on a sequence of blog posts I wrote for the <a class="reference external" href="https://spell.ml/">blog</a> while working for Spell. We are a model ops company that specializes and making training and deploying deep learning models on the cloud as simple and easy as possible.</p>
+<p>I was inspired to collect and edit these disparate posts, plus some new material, into a single book by the blog post <a class="reference external" href="https://efficientdl.com/faster-deep-learning-in-pytorch-a-guide/">Faster Deep Learning Training with PyTorch – a 2021 Guide</a>, by Lorenz Kuhn. This blog post was the subject of <a class="reference external" href="https://www.reddit.com/r/MachineLearning/comments/kvs1ex/d_here_are_17_ways_of_making_pytorch_training/">one of the most popular r/MachineLearning posts of all time</a>.</p>
 </div>
 </div>
 
@@ -349,10 +356,10 @@ const thebe_selector_output = ".output, .cell_output"
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='right-next' id="next-link" href="lr-sched-and-optim.html" title="next page">
+    <a class='right-next' id="next-link" href="quickstart.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">LR Schedulers, Adaptive Optimizers</p>
+        <p class="prev-next-title">Quickstart</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

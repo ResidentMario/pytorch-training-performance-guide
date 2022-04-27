@@ -97,8 +97,28 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <ul class="current nav bd-sidenav">
  <li class="toctree-l1">
+  <a class="reference internal" href="quickstart.html">
+   Quickstart
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="lr-sched-and-optim.html">
    LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="data-distributed-training.html">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
   </a>
  </li>
  <li class="toctree-l1">
@@ -114,21 +134,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="pruning.html">
    Model Pruning
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="data-distributed-training.html">
-   Data-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="model-distributed-training.html">
-   Model-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="mixed-precision.html">
-   Mixed Precision
   </a>
  </li>
  <li class="toctree-l1">
@@ -299,7 +304,7 @@ const thebe_selector_output = ".output, .cell_output"
 <p>Constructing and deconstructing objects in this way paves the way to a good developer experience. The code that’s actually executing the mathematical operations involved is ultimately a C++ or CUDA kernel, but the result of each individual operation is immediately transferred to (and accessible from) the Python process, because the Python process is the “intelligent” part—it’s what’s managing the computational graph as a whole. This is why debugging in PyTorch is as simple as dropping <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pdb;</span> <span class="pre">pdb.set_trace()</span></code> in the middle of your code.</p>
 <p>Alternatively, one may make use of <strong>graph execution</strong>. Graph execution pushes the management of the computational graph down to the kernel level (e.g. to a C++ process) by adding an additional compilation step to the process. The state is not surfaced back to the Python process until after execution is complete.</p>
 <p>Graph execution is faster than eager execution: the computational graph need only be built once, and the compiler can automatically find and apply optimizations to the code that aren’t possible in an interpreted context (compare the performance of Python with C, for example). However, this comes at the cost of developer experience. All of the interesting state is now managed by a C++ kernel. Debugging with <code class="docutils literal notranslate"><span class="pre">pdb</span></code> is no longer possible (you’ll need to attach <code class="docutils literal notranslate"><span class="pre">gdb</span></code> to the C++ process—not only is this a lot more work, but it also requires knowing a second programming language). Error messages are now bubbled-up C++ error messages, which tend to be opaque and hard to connect to their Python source.</p>
-<p>When PyTorch got its start back in 2016, it wasn’t immediately obvious which execution mode was better. By time of writing, January 2021, eager execution has emerged as the clear winner. PyTorch’s rapid growth in market share at the expense of TensorFlow is largely credited to its ease-of-use, which in turn is largely credited to its use of the eager execution model. TensorFlow, which used graph execution by default in version 1, switched to using eager execution by default in TensorFlow 2.</p>
+<p>When PyTorch got its start back in 2016, it wasn’t immediately obvious which execution mode was better. Today eager execution has emerged as the clear winner. PyTorch’s rapid growth in market share at the expense of TensorFlow is largely credited to its ease-of-use, which in turn is largely credited to its use of the eager execution model. TensorFlow, which used graph execution by default in version 1, switched to using eager execution by default in TensorFlow 2.</p>
 <p>That being said, graph execution still has its uses. In production settings, any gain in performance can produce significant reductions in the overall cost of running a model. And the pure C++ computational graphs graph execution produces are much more portable than Python computational graph. This is particularly important on embedded and mobile platforms, which offer only extremely limited Python support.</p>
 <p>For this reason, there has been some amount of co-evolution. TensorFlow, which started as a graph framework, now supports eager. And PyTorch, which started as an eager framework, now supports graph—<code class="docutils literal notranslate"><span class="pre">pytorch.jit</span></code>, the subject of this post.</p>
 <p>Here JIT stands for <a class="reference external" href="https://en.wikipedia.org/wiki/Just-in-time_compilation">just-in-time compilation</a>. In the next two sections, we’ll cover how it can be used. And in the section after that, we’ll cover why you should use it, looking at a benchmark showing how much of a performance <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> can create.</p>
@@ -512,10 +517,10 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
-<p>In this post we saw, at a very high level, what <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> is and how it can be used to greatly improve the performance of your custom module code. We saw a benchmark application to a Conv2d layer showing an approximately 2x speedup and another benchmark application to an LSTM module showing an approximately 3x speedup.</p>
+<p>In this post we saw, at a very high level, what <code class="docutils literal notranslate"><span class="pre">torch.jit</span></code> is and how it can be used to greatly improve the performance of your custom module code. We saw a benchmark application to a <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> layer showing an approximately 2x speedup and another benchmark application to an LSTM module showing an approximately 3x speedup.</p>
 <p>I should note that, though they are the focus of this blog post, high-performance custom modules are not the only thing that JIT allows.</p>
 <p>PyTorch JIT also has the major benefit that it creates a C++ computational graph consumable using <code class="docutils literal notranslate"><span class="pre">libtorch</span></code>, PyTorch’s C++ implementation. This provides portability. Mobile and embedded platforms are usually a poor choice for Python code; meanwhile, a C++ neural network module can be consumed from any programming language capable of linking to a C++ executable, which is pretty much all of them. To this effect, the PyTorch website has recipes for Android and iOS showing how this is done.</p>
-<p>However, I personally think that fast custom modules is the much more common use case. 90% of machine learning projects do not target embedded deployments. In either case, these are outside of the scope of this book!</p>
+<p>However, this application is outside of the scope of this book!</p>
 <!--
 ## To-do
 

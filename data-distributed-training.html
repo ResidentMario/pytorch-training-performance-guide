@@ -51,7 +51,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Model-Distributed Training" href="model-distributed-training.html" />
-    <link rel="prev" title="Model Pruning" href="pruning.html" />
+    <link rel="prev" title="Mixed Precision" href="mixed-precision.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -97,8 +97,28 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <ul class="current nav bd-sidenav">
  <li class="toctree-l1">
+  <a class="reference internal" href="quickstart.html">
+   Quickstart
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="lr-sched-and-optim.html">
    LR Schedulers, Adaptive Optimizers
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mixed-precision.html">
+   Mixed Precision
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Data-Distributed Training
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="model-distributed-training.html">
+   Model-Distributed Training
   </a>
  </li>
  <li class="toctree-l1">
@@ -114,21 +134,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="pruning.html">
    Model Pruning
-  </a>
- </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   Data-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="model-distributed-training.html">
-   Model-Distributed Training
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="mixed-precision.html">
-   Mixed Precision
   </a>
  </li>
  <li class="toctree-l1">
@@ -208,13 +213,13 @@ const thebe_selector_output = ".output, .cell_output"
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#what-is-distributed-training">
-   What is distributed training?
+  <a class="reference internal nav-link" href="#data-parallelization-versus-model-parallelization">
+   Data parallelization versus model parallelization
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#how-data-parallelization-works">
-   How data parallelization works
+  <a class="reference internal nav-link" href="#how-it-works">
+   How it works
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -258,13 +263,13 @@ const thebe_selector_output = ".output, .cell_output"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#what-is-distributed-training">
-   What is distributed training?
+  <a class="reference internal nav-link" href="#data-parallelization-versus-model-parallelization">
+   Data parallelization versus model parallelization
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#how-data-parallelization-works">
-   How data parallelization works
+  <a class="reference internal nav-link" href="#how-it-works">
+   How it works
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -298,31 +303,22 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="data-distributed-training">
 <h1>Data-Distributed Training<a class="headerlink" href="#data-distributed-training" title="Permalink to this headline">¶</a></h1>
-<p>Cutting edge deep learning models are growing at an exponential rate: where last year’s GPT-2 had ~750 million parameters, this year’s GPT-3 has 175 billion. GPT is a pretty extreme example; nevertheless, the “enbiggening” of the SOTA is driving larger and larger models into production applications, challenging the ability of even the most powerful of GPU cards to finish model training jobs in a reasonable amount of time.</p>
-<p>To deal with these problems, practitioners are increasingly turning to distributed training. <strong>Distributed training</strong> is the set of techniques for training a deep learning model using multiple GPUs and/or multiple machines. Distributing training jobs allow you to push past the single-GPU memory bottleneck, developing ever larger and powerful models by leveraging many GPUs simultaneously.</p>
-<p>This blog post is an introduction to the distributed training in pure PyTorch using the <code class="docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code> API. We will:</p>
-<ul class="simple">
-<li><p>Discuss distributed training in general and data parallelization in particular</p></li>
-<li><p>Cover the relevant features of the <code class="docutils literal notranslate"><span class="pre">torch.dist</span></code> and <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> and show how they are used by example</p></li>
-<li><p>And benchmark a real training script to see the time savings in action</p></li>
-</ul>
+<p><strong>Distributed training</strong> is the set of techniques for training a deep learning model using multiple GPUs and/or multiple machines. Distributing training jobs allow you to push past the single-GPU memory and compute bottlenecks, expediting the training of larger models (or even making it possible to train them in the first place) by training across many GPUs simultaneously.</p>
+<p>There are two types of distributed training that see use in production today. This chapter covers the better-known of the two techniques: <strong>data-distributed training</strong>. Data-distributed training works by initializing the same model on multiple different machines, slicing the batch up and backprogating on each machine simultaneously, collecting and averaging the resulting gradients, and then updating each local machine’s local copy of the model prior to the next round of training.</p>
+<p>In native PyTorch this pattern is implemented by the <code class="docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code> API.</p>
 <p><a class="reference external" href="https://github.com/spellrun/deeplab-voc-2012">You can follow along in code by checking out the companion GitHub repo</a>.</p>
 <p><strong>TLDR</strong>: data-distributed training is the best way to train models too large to fit on disk on a single machine. However, the network synchronization required have a very real efficiency cost, so you should only turn to using this technique once you have exhausted your ability to scale your training instance vertically (e.g. you are already working with the largest GPU instance available to you).</p>
-<div class="section" id="what-is-distributed-training">
-<h2>What is distributed training?<a class="headerlink" href="#what-is-distributed-training" title="Permalink to this headline">¶</a></h2>
-<p>Before we can dive into <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>, we first need to acquire some background knowledge about distributed training in general.</p>
-<p>There are basically two different forms of distributed training in common use today: data parallelization and model parallelization.</p>
-<p>In <strong>data parallelization</strong>, the model training job is split on the data. Each GPU in the job receives its own independent slice of the data batch, e.g. its own “batch slice”. Each GPU uses this data to independently calculate a gradient update. For example, if you were to use two GPUs and a batch size of 32, one GPU would handle forward and back propagation on the first 16 records, and the second the last 16. These gradient updates are then synchronized among the GPUs, averaged together, and finally applied to the model.</p>
+<div class="section" id="data-parallelization-versus-model-parallelization">
+<h2>Data parallelization versus model parallelization<a class="headerlink" href="#data-parallelization-versus-model-parallelization" title="Permalink to this headline">¶</a></h2>
+<p>A model training job that uses data parallelization is executed on multiple GPUs simultaneously. Each GPU in the job receives its own independent slice of the data batch (a <strong>batch slice</strong>), which it uses to independently calculate a gradient update. For example, if you were to use two GPUs and a batch size of 32, one GPU would handle forward and back propagation on the first 16 records, and the second the last 16. These gradient updates are then synchronized among the GPUs, averaged together, and finally applied to the model.</p>
 <p>The synchronization step is technically optional, but theoretically faster asynchronous update strategies are still an active area of research.</p>
-<p>In <strong>model parallelization</strong>, the model training job is split on the model. Each GPU in the job receives a slice of the model, e.g. a subset of its layers. So for example, one GPU might be responsible for its output head,another might handle the input layers, and another, the hidden layers in between.</p>
-<p>While each of these techniques has its advantages and disadvantages, data parallelization is the easier of the two to implement (it requires no knowledge of the underlying network architecture) and thus the strategy which is usually tried first.</p>
-<p>It’s also possible to combine the techniques, e.g. to use model and data parallelization simultaneously, but this is an advanced topic that we won’t be covering here.</p>
-<p>Since this blog post is an introduction to the <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> API, we will not be discussing model parallelization in any further detail — that material will left to a future chapter of this book!</p>
+<p>Data parallelization competes with <strong>model parallelization</strong> for mindshare. In model parallelization, the model training job is split on the model. Each GPU in the job receives a slice of the model - a subset of its layers. So for example, one GPU might be responsible for its output head, another might handle the input layers, and still another the hidden layers in between.</p>
+<p>Data parallelization (aka data-distributed training) is the easier of these two techniques to implement. It requires no knowledge of the underlying network architecture to implement and has robust API implementations.</p>
+<p>This chapter will cover data-distributed training only. A future chapter covers model-distributed training. Note that it’s also possible to use these two techniques simultaneously.</p>
 </div>
-<div class="section" id="how-data-parallelization-works">
-<h2>How data parallelization works<a class="headerlink" href="#how-data-parallelization-works" title="Permalink to this headline">¶</a></h2>
-<p>In the previous section I gave a high-level overview of what data parallelization is. In this section, we will dig further into the details.</p>
-<p>The first data parallelization technique to see widespread adoption is the <strong>parameter server strategy</strong> in TensorFlow. This feature actually predates the very first release of TensorFlow, having been implemented in its Google-internal predecessor, DistBelief, way back in 2012. This strategy is illustrated well in the following diagram (taken from <a class="reference external" href="https://eng.uber.com/horovod/">a post</a> on the Uber Engineering blog):</p>
+<div class="section" id="how-it-works">
+<h2>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h2>
+<p>As far as I can tell, the first data parallelization technique to see adoption in deep learning was the <strong>parameter server strategy</strong> in TensorFlow. This technique predates TensorFlow itself: it was actually first implemented in its Google-internal predecessor, DistBelief, in 2012. This strategy is illustrated in the following diagram (taken from <a class="reference external" href="https://eng.uber.com/horovod/">here</a>):</p>
 <p><img alt="Parameter server strategy" src="_images/parameter-server-strategy.avif" /></p>
 <p>In the parameter server strategy there is a variable number of worker and parameter processes, with each worker process maintaining its own independent copy of the model in GPU memory. Gradient updates are computed as follows:</p>
 <ol class="simple">
@@ -332,27 +328,27 @@ const thebe_selector_output = ".output, .cell_output"
 <li><p>The gradient updates are fanned out to the workers, which sum them up and apply them to their in-memory copy of the model weights (thus keeping the worker models in sync).</p></li>
 <li><p>Once every worker has applied the updates, a new batch of training is ready to begin.</p></li>
 </ol>
-<p>Whilst simple to implement, this strategy has some major limitations. The most important of these is the fact that each additional parameter server requires <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> additional network calls at each synchronization step —an <code class="docutils literal notranslate"><span class="pre">O(n^2)</span></code> complexity cost. The overall speed of the computation depended on the slowest connection, so large parameter server -based model training jobs get to be very inefficient in practice, pushing net GPU utilization to 50% or below.</p>
-<p>(For more background I recommend watching <a class="reference external" href="https://www.youtube.com/watch?v=jKV53r9-H14">Inside TensorFlow: tf.distribute.Strategy</a>)</p>
-<p>More modern distributed training strategies do away with parameter servers.</p>
-<p>In the <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> strategy, every process is a worker process. Each process still maintains a complete in-memory copy of the model weights, but batch slice gradients updates are now synchronized and averaged directly on the worker processes themselves. This is achieved using a technique borrowed from the high-performance computing world: an <strong>all-reduce algorithm</strong>:</p>
+<p>Whilst simple to implement, this strategy has some major limitations. Each additional parameter server requires <code class="docutils literal notranslate"><span class="pre">n_workers</span></code> additional network calls at each synchronization step — an <code class="docutils literal notranslate"><span class="pre">O(n^2)</span></code> complexity cost. Furthermore, computational sped was blocked on the slowest connection in the network. Large parameter server model training jobs proved to be very inefficient in practice, pushing net GPU utilization to 50% or below.</p>
+<p>For the curious, the <a class="reference external" href="https://www.youtube.com/watch?v=jKV53r9-H14">Inside TensorFlow: tf.distribute.Strategy</a> tech talk has more details.</p>
+<p>The 2017 Baidu paper <a class="reference external" href="https://web.archive.org/web/20180421011035/http://research.baidu.com/bringing-hpc-techniques-deep-learning/">Bringing HPC Techniques to Deep Learning</a> improved upon this strategy. This paper experimentally validated a new distributed training strategy that did away with the parameter server component.</p>
+<p>In this strategy, every process is a worker process. Each process still maintains a complete in-memory copy of the model weights, but batch slice gradients updates are now synchronized and averaged directly on the worker processes themselves. This is achieved using a technique borrowed from the high-performance computing world: an <strong>all-reduce algorithm</strong>:</p>
 <p><img alt="All-reduce diagram" src="_images/all-reduce.avif" /></p>
-<p>This diagram shows one particular implementation of an all-reduce algorithm, ring all-reduce, in action. As you can see, this algorithm provides an elegant way of synchronizing the state of a set of variables (in this case tensors) among a collection of processes. The vectors are passed around directly in a sequence of direct worker-to-woker connections. This eliminates the network bottleneck created by the worker-to-parameter-server connections, substantially improving performance.</p>
+<p>This diagram shows one particular implementation of an all-reduce algorithm, ring all-reduce, in action. The algorithm provides an elegant way of synchronizing the state of a set of tensors among a collection of processes. The tensors are passed in a ring (hence the name) by a sequence of direct worker-to-woker connections. This eliminates the network bottleneck created by the worker-to-parameter-server connections, substantially improving performance.</p>
 <p>In this scheme, gradient updates are computed as follows:</p>
 <ol class="simple">
 <li><p>Each worker maintains its own copy of the model weights and its own copy of the dataset.</p></li>
 <li><p>Upon receiving the go signal, each worker process draws a disjoint batch from the dataset and computes a gradient for that batch.</p></li>
 <li><p>The workers use an all-reduce algorithm to synchronize their individual gradients, computing the same average gradient on all nodes locally.</p></li>
 <li><p>Each worker applies the gradient update to its local copy of the model.</p></li>
-<li><p>The next batch of training begins.</p></li>
+<li><p>The next batch of training is ready to begin.</p></li>
 </ol>
-<p>This all-reduce strategy was brought to the forefront in the 2017 Baidu paper <a class="reference external" href="https://web.archive.org/web/20180421011035/http://research.baidu.com/bringing-hpc-techniques-deep-learning/">Bringing HPC Techniques to Deep Learning</a>. The great thing about it is that it is based on well-understood HPC techniques with longstanding open source implementations. All-reduce is included in the <a class="reference external" href="https://en.wikipedia.org/wiki/Message_Passing_Interface">Message Passing Interface</a> (MPI) de facto standard, which is why PyTorch DistributedDataParallel offfers no less than three different backend implementations: <a class="reference external" href="https://www.open-mpi.org/">Open MPI</a>, <a class="reference external" href="https://developer.nvidia.com/nccl">NVIDIA NCCL</a>, and <a class="reference external" href="https://github.com/facebookincubator/gloo">Facebook Gloo</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code> PyTorch API is an implementation of this strategy.</p>
+<p>The great thing about this approach is that all-reduce is a well-understood HPC techniques with longstanding open source implementations. All-reduce is part of the <a class="reference external" href="https://en.wikipedia.org/wiki/Message_Passing_Interface">Message Passing Interface</a> (MPI) de facto standard, which is why PyTorch <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> offfers not one but three different backends: <a class="reference external" href="https://www.open-mpi.org/">Open MPI</a>, <a class="reference external" href="https://developer.nvidia.com/nccl">NVIDIA NCCL</a>, and <a class="reference external" href="https://github.com/facebookincubator/gloo">Facebook Gloo</a>.</p>
 </div>
 <div class="section" id="data-distributed-part-1-process-initialization">
 <h2>Data distributed, part 1: process initialization<a class="headerlink" href="#data-distributed-part-1-process-initialization" title="Permalink to this headline">¶</a></h2>
-<p>Unfortunately modifying your training script to use <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> strategy is not a simple one-line change.</p>
-<p>To demonstrate how the API works, we will build our way towards a complete distributed training script (which we will go on to benchmark later in this article). <a class="reference external" href="https://github.com/spellrun/deeplab-voc-2012">I recommend following along with the code on GitHub</a>.</p>
-<p>The first and most complicated new thing you need to handle is process initialization. A vanilla PyTorch training script executes a single copy of its code inside of a single process. With data parallelized models, the situation is more complicated: there are now as many simultaneous copies of the training script as there are GPUs in the training cluster, each one running in a different process.</p>
+<p>To demonstrate how the API works, we will build our way towards a complete distributed training script (which we will benchmark later). <a class="reference external" href="https://github.com/spellrun/deeplab-voc-2012">Here is the code on GitHub</a>.</p>
+<p>The first and most complicated new thing you need to handle is process initialization. A vanilla PyTorch training script executes a single copy of its code inside of a single process. With parallelized training, the situation is more complicated: there are now as many simultaneous copies of the training script as there are GPUs in the training cluster, each one running in a different process.</p>
 <p>Consider the following minimal example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># multi_init.py</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -381,9 +377,9 @@ const thebe_selector_output = ".output, .cell_output"
 </pre></div>
 </div>
 <p>In the world of MPI, <strong>world size</strong> is the number of processes being orchestrated, and <strong>(global) rank</strong> is the position of the current process in that world. So for example, if this script were to be executing on a beefy machine with four GPUs onboard, <code class="docutils literal notranslate"><span class="pre">WORLD_SIZE</span></code> would be <code class="docutils literal notranslate"><span class="pre">4</span></code> (because <code class="docutils literal notranslate"><span class="pre">torch.cuda.device_count()</span> <span class="pre">==</span> <span class="pre">4</span></code>), so <code class="docutils literal notranslate"><span class="pre">mp.spawn</span></code> would spawn <code class="docutils literal notranslate"><span class="pre">4</span></code> different processes, whose rank would be <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, or <code class="docutils literal notranslate"><span class="pre">3</span></code> respectively. The process with rank <code class="docutils literal notranslate"><span class="pre">0</span></code> is given a few extra responsibilities, and is therefore referred to as the <strong>master process</strong>.</p>
-<p>The current process’s rank is passed through as the spawn entrypoint (in this case, the train method) as its first argument. Before train can actually do any work, it needs to first set up its connections to its peer processes. This is the responsibility of the <code class="docutils literal notranslate"><span class="pre">dist.init_process_group</span></code>. When run in the master process, this method sets up a socket listener on <code class="docutils literal notranslate"><span class="pre">MASTER_ADDR:MASTER_PORT</span></code> and starts handling connections from the other processes. Once all of the processes have connected, this method handles setting up the peer connections allowing the processes to communicate.</p>
-<p>Note that this recipe only works for training on a single multi-GPU machine! The same machine is used to launch every single process in the job, so training can only leverage the GPUs connected to that specific machine. This makes things easy: setting up IPC is as easy as finding a free port on <code class="docutils literal notranslate"><span class="pre">localhost</span></code>, which is immediately visible to all processes on that machine. IPC across machines is much more complicated, as it requires configuring an external IP address visible to all machines.</p>
-<p>In this introductory tutorial we will focus specifically on the single-machine case, aka vertical scaling. Even on its own, vertical scaling is an extremely powerful tool. On the cloud, vertical scaling allows you to scale your deep learning training job all the way up to an 8xV100 instance (e.g. a <code class="docutils literal notranslate"><span class="pre">p3.16xlarge</span></code> on AWS). That’s a lot of deep learning horsepower — in the ballpark of an NVIDIA DGX-1, a system that retailed for $150,000 at launch!</p>
+<p>The current process’s rank is passed through to the <code class="docutils literal notranslate"><span class="pre">spawn</span></code> entrypoint (in this case, the <code class="docutils literal notranslate"><span class="pre">train</span></code> method) as its first argument. Before <code class="docutils literal notranslate"><span class="pre">train</span></code> can actually do any work, it needs to first set up its connections to its peer processes. This is the responsibility of the <code class="docutils literal notranslate"><span class="pre">dist.init_process_group</span></code>. When run in the master process, this method sets up a socket listener on <code class="docutils literal notranslate"><span class="pre">MASTER_ADDR:MASTER_PORT</span></code> and starts handling connections from the other processes. Once all of the processes have connected, this method handles setting up the peer connections allowing the processes to communicate.</p>
+<p>Note that this recipe only works for training on a single multi-GPU machine! The same machine is used to launch every single process in the job, so training can only leverage the GPUs connected to that specific machine. This makes things easy: setting up IPC is as easy as finding a free port on <code class="docutils literal notranslate"><span class="pre">localhost</span></code>, which is immediately visible to all processes on that machine. IPC across machines is more complicated, as it requires configuring an external IP address visible to all machines.</p>
+<p>In this introductory tutorial we will focus specifically on the single-machine case, aka vertical scaling. Even on its own, vertical scaling is an extremely powerful tool. On the cloud, vertical scaling allows you to scale your deep learning training job all the way up to an A100x8. That’s a lot of deep learning horsepower!</p>
 <p>We will discuss horizontal scaling with data parallelization in a future blog post. In the meantime, to see a code recipe showing it in action, check out <a class="reference external" href="https://web.archive.org/web/20200201184058/https://pytorch.org/tutorials/beginner/aws_distributed_training_tutorial.html">the PyTorch AWS tutorial</a>.</p>
 </div>
 <div class="section" id="data-distributed-part-2-process-synchronization">
@@ -408,8 +404,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <p>The processes are independently executed, and there are no guarantees about what state any one state is at any one point in the training loop. This requires making some careful changes to your initialization process.</p>
 <p><strong>(1)</strong> Any methods that download data should be isolated to the master process.</p>
-<p>Failing to do so will replicate the download process across all of the processes, resulting in four processes writing to the same file simultaneously — a surefire recipe for data corruption.</p>
-<p>Luckily, this is easy to do:</p>
+<p>Failing to do so will replicate the download process across all of the processes, resulting in four processes writing to the same file simultaneously, wasting a lot of time and possibly risking a filesystem deadlock. This can be done as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import torch.distributed as dist</span>
 <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="n">downloading_dataset</span><span class="p">()</span>
@@ -432,8 +427,8 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> uses <code class="docutils literal notranslate"><span class="pre">rank</span></code> and <code class="docutils literal notranslate"><span class="pre">world_size</span></code> to figure out how to split the dataset across the processes into non-overlapping batches. Every training step the worker process retrieves batch_size observations from its local copy of the dataset. In the example case of four GPUs, this means an effective batch size of <code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">4</span> <span class="pre">=</span> <span class="pre">32</span></code>.</p>
-<p><strong>(3)</strong> Tensors needs to be loaded into the correct device. To do so, parameterize your <code class="docutils literal notranslate"><span class="pre">.cuda()</span></code> calls with the rank of the device the process is managing:</p>
+<p><code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> uses <code class="docutils literal notranslate"><span class="pre">rank</span></code> and <code class="docutils literal notranslate"><span class="pre">world_size</span></code> to partition the dataset across the processes into non-overlapping batches. Every training step the worker process retrieves <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> observations from its local copy of the dataset. In the example case of four GPUs, this means an effective batch size of <code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">4</span> <span class="pre">=</span> <span class="pre">32</span></code>.</p>
+<p><strong>(3)</strong> Tensors needs to be loaded into the correct device. To do so, parameterize your <code class="docutils literal notranslate"><span class="pre">.cuda()</span></code> or <code class="docutils literal notranslate"><span class="pre">.to()</span></code> calls with the rank of the device the process is managing:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 <span class="n">segmap</span> <span class="o">=</span> <span class="n">segmap</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
@@ -448,8 +443,8 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The PyTorch documentation has an entire page dedicated to this topic: <a class="reference external" href="https://pytorch.org/docs/stable/notes/randomness.html">Reproducibility</a>.</p>
-<p>(5) Any methods that perform file I/O should be isolated to the master process.</p>
+<p>The PyTorch documentation has an entire <a class="reference external" href="https://pytorch.org/docs/stable/notes/randomness.html">Reproducibility</a> page dedicated to this topic.</p>
+<p><strong>(5)</strong> Any methods that perform file I/O should be isolated to the master process.</p>
 <p>This is necessary for the same reason that isolating network I/O is necessary: the inefficiency and potential for data corruption created by concurrent writes to the same file. Again, this is easy to do using simple conditional logic:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;/spell/checkpoints/&#39;</span><span class="p">):</span>
@@ -466,7 +461,7 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">DistributedDataParallel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Congratulations—assuming you’ve done everything right (it’s a lot 😅) your model is now training in distributed data parallel mode!</p>
+<p>With that change the model is now training in distributed data parallel mode!</p>
 <p><a class="reference external" href="https://github.com/spellrun/deeplab-voc-2012">To see complete code samples, head to the GitHub repo</a>.</p>
 </div>
 <div class="section" id="what-about-dataparallel">
@@ -478,16 +473,15 @@ const thebe_selector_output = ".output, .cell_output"
 <p>A one-liner change! Why not just use that instead?</p>
 <p>Under the hood, <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> uses multithreading, instead of multiprocessing, to manage its GPU worker. This greatly simplifies the implementation: since the workers are all different threads of the same process, they all have access to the same shared state without requiring any additional synchronization steps.</p>
 <p>However, using multithreading for computational jobs in Python is famously unperformant, due to the presence of the <a class="reference external" href="https://wiki.python.org/moin/GlobalInterpreterLock">Global Interpreter Lock</a>. As the benchmarks in the next section will show, models parallelized using <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> are significantly slower than those parallelized using <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>.</p>
-<p>Nevertheless, <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> remains an extremely useful for model training jobs you want to speed up, but don’t want to spend the additional time and energy optimizing fully.</p>
 </div>
 <div class="section" id="benchmarks">
 <h2>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h2>
 <p>To benchmark distributed model training performance I trained a <code class="docutils literal notranslate"><span class="pre">DeepLabV3-ResNet</span> <span class="pre">101</span></code> model (via <a class="reference external" href="https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101/">Torch Hub</a>) on the PASCAL VOC 2012 dataset (from <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> <a class="reference external" href="https://pytorch.org/docs/stable/torchvision/datasets.html">datasets</a>) for 20 epochs. I used the Spell API to launch five different versions of this model training job: once on a single V100 (a <code class="docutils literal notranslate"><span class="pre">p3.2xlarge</span></code> on AWS), and once each on a V100x4 (<code class="docutils literal notranslate"><span class="pre">p3.8xlarge</span></code>) and a V100x8 (<code class="docutils literal notranslate"><span class="pre">p3.16xlarge</span></code>) using <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> and <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>. This benchmark excludes the time spent downloading data at the beginning of the run—only model training and saving time counts.</p>
 <p>The results are not definitive by any means, but should nevertheless give you some sense of the time save distributed training nets you:</p>
+<p><em>Author note: these benchmarks were last run in June 2020. Improvements in the DistributedDataParallel implementation have likely further reduced runtimes since then.</em></p>
 <p><img alt="Benchmarks" src="_images/benchmarks.avif" /></p>
 <p>As you can clearly see, <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> is noticeably more efficient than <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>, but still far from perfect. Switching from a V100x1 to a V100x4 is a 4x multiplier on raw GPU power but only 3x on model training speed. Doubling the compute further by moving up to a V100x8 only produces a ~30% improvement in training speed. By that point <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> almost catches up to <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> in (in)efficiency.</p>
-<p>Note that this is still an active area of development. The PyTorch team landed a new PR just this month that promises substantial improvements to <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> performance. Expect those times to come down in future releases!</p>
-<p>Something that I don’t think gets discussed often enough is the impact that distributed training has on developer productivity. Taking even a moderately-sized model from “this takes three hours to train” to “this takes one hour to train” greatly increases the volume of experiments you can perform on and with the model in a single day — a substantial improvement to your developer velocity.</p>
+<p>Note that this is still an active area of development. Expect these times to continue to improve in new PyTorch releases!</p>
 <!--
 ## To-do
 
@@ -522,11 +516,11 @@ const thebe_selector_output = ".output, .cell_output"
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="pruning.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="mixed-precision.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Model Pruning</p>
+            <p class="prev-next-title">Mixed Precision</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="model-distributed-training.html" title="next page">
