@@ -2,4 +2,4 @@
 
 A Jupyter Book covering PyTorch model training performance optimization.
 
-<!-- ![Screenshot of the book homepage](./screenshot.png) -->
+![Screenshot of the book homepage](./screenshot.png)
